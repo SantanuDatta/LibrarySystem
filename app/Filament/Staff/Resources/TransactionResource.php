@@ -83,7 +83,7 @@ class TransactionResource extends Resource
                                             ->native(false)
                                             ->searchable()
                                             ->preload()
-                                            ->label('Book Borrowed'),
+                                            ->label('Book'),
                                         DatePicker::make('borrowed_date')
                                             ->live(),
                                         TextInput::make('borrowed_for')
@@ -93,6 +93,7 @@ class TransactionResource extends Resource
                                         DatePicker::make('returned_date')
                                             ->visible(fn (Get $get): bool => $get('status') === 'returned'
                                                 || $get('status') === 'delayed')
+                                            ->afterOrEqual('borrowed_date')
                                             ->live()
                                             ->columnSpanFull(),
                                     ])->columns(2),
@@ -122,6 +123,7 @@ class TransactionResource extends Resource
                                                             $borrowedDate = Carbon::parse($borrowedDate);
                                                             $returnedDate = Carbon::parse($returnedDate);
                                                             $dueDate = $borrowedDate->copy()->addDays($borrowedFor);
+                                                            $delay = 0;
                                                             $fine = 0;
                                                             if ($returnedDate->gt($dueDate)) {
                                                                 $delay = $dueDate->diffInDays($returnedDate);
