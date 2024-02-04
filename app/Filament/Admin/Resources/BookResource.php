@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\BookResource\Pages;
+use App\Http\Traits\NavigationCount;
 use App\Models\Author;
 use App\Models\Book;
 use Filament\Forms\Components\DatePicker;
@@ -32,6 +33,8 @@ use Illuminate\Support\Facades\Storage;
 
 class BookResource extends Resource
 {
+    use NavigationCount;
+
     protected static ?string $model = Book::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
@@ -41,17 +44,6 @@ class BookResource extends Resource
     protected static ?string $recordTitleAttribute = 'title';
 
     protected static ?int $globalSearchResultLimit = 20;
-
-    public static function getNavigationItems(): array
-    {
-        [$navigationItem] = parent::getNavigationItems();
-        $count = static::getModel()::count();
-
-        return [
-            $navigationItem
-                ->badge($count, color: $count > 10 ? 'info' : 'gray'),
-        ];
-    }
 
     public static function getGlobalSearchResultDetails(Model $record): array
     {
@@ -163,13 +155,16 @@ class BookResource extends Resource
                     EditAction::make(),
                     DeleteAction::make()
                         ->before(function ($record) {
-                            Storage::disk('public')->delete($record->cover_image);
+                            Storage::disk('public')->delete($record);
                         }),
                 ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->before(function ($records) {
+                            Storage::disk('public')->delete($records);
+                        }),
                 ]),
             ]);
     }

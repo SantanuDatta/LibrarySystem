@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\UserResource\Pages;
+use App\Http\Traits\NavigationCount;
 use App\Models\User;
 use Filament\AvatarProviders\UiAvatarsProvider;
 use Filament\Forms\Components\FileUpload;
@@ -27,22 +28,13 @@ use Illuminate\Support\Facades\Storage;
 
 class UserResource extends Resource
 {
+    use NavigationCount;
+
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
     protected static ?string $navigationGroup = 'Settings';
-
-    public static function getNavigationItems(): array
-    {
-        [$navigationItem] = parent::getNavigationItems();
-        $count = static::getModel()::count();
-    
-        return [
-            $navigationItem
-                ->badge($count, color: $count > 10 ? 'info' : 'gray'),
-        ];
-    }
 
     public static function form(Form $form): Form
     {
@@ -87,7 +79,7 @@ class UserResource extends Resource
                                             ->avatar()
                                             ->imageEditor()
                                             ->deleteUploadedFileUsing(fn ($record) => Storage::disk('public')
-                                                ->delete($record)
+                                                ->delete($record->avatar_url)
                                             )
                                             ->extraAttributes([
                                                 'class' => 'justify-center',
@@ -132,7 +124,10 @@ class UserResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->before(function ($records) {
+                            Storage::disk('public')->delete($records->each->avatar_url);
+                        }),
                 ]),
             ]);
     }

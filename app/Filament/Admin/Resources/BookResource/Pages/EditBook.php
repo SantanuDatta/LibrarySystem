@@ -23,7 +23,7 @@ class EditBook extends EditRecord
             DeleteAction::make()
                 ->before(function ($record) {
                     Storage::disk('public')
-                        ->delete($record->cover_image);
+                        ->delete($record);
                 }),
             Action::make('reset')
                 ->outlined()

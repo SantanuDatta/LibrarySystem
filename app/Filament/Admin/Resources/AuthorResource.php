@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\AuthorResource\Pages;
+use App\Http\Traits\NavigationCount;
 use App\Models\Author;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
@@ -27,6 +28,8 @@ use Illuminate\Support\Facades\Storage;
 
 class AuthorResource extends Resource
 {
+    use NavigationCount;
+
     protected static ?string $model = Author::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-circle';
@@ -36,17 +39,6 @@ class AuthorResource extends Resource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static int $globalSearchResultLimit = 20;
-
-    public static function getNavigationItems(): array
-    {
-        [$navigationItem] = parent::getNavigationItems();
-        $count = static::getModel()::count();
-    
-        return [
-            $navigationItem
-                ->badge($count, color: $count > 10 ? 'info' : 'gray'),
-        ];
-    }
 
     public static function getGlobalSearchResultDetails(Model $record): array
     {
@@ -131,13 +123,16 @@ class AuthorResource extends Resource
                     EditAction::make(),
                     DeleteAction::make()
                         ->before(function ($record) {
-                            Storage::disk('public')->delete($record->avatar);
+                            Storage::disk('public')->delete($record);
                         }),
                 ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->before(function ($records) {
+                            Storage::disk('public')->delete($records);
+                        }),
                 ]),
             ]);
     }

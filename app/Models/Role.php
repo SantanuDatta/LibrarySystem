@@ -15,6 +15,10 @@ class Role extends Model
         'description',
     ];
 
+    public const IS_ADMIN = 1;
+    public const IS_STAFF = 2;
+    public const IS_BORROWER = 3;
+
     public function users(): HasMany
     {
         return $this->hasMany(User::class);

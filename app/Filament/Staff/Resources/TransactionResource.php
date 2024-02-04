@@ -4,6 +4,7 @@ namespace App\Filament\Staff\Resources;
 
 use App\Enums\BorrowedStatus;
 use App\Filament\Staff\Resources\TransactionResource\Pages;
+use App\Http\Traits\NavigationCount;
 use App\Models\Book;
 use App\Models\Transaction;
 use App\Models\User;
@@ -29,6 +30,8 @@ use Illuminate\Support\Carbon;
 
 class TransactionResource extends Resource
 {
+    use NavigationCount;
+
     protected static ?string $model = Transaction::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-credit-card';
@@ -38,17 +41,6 @@ class TransactionResource extends Resource
     protected static ?string $recordTitleAttribute = 'user.name';
 
     protected static ?int $globalSearchResultLimit = 20;
-
-    public static function getNavigationItems(): array
-    {
-        [$navigationItem] = parent::getNavigationItems();
-        $count = static::getModel()::count();
-    
-        return [
-            $navigationItem
-                ->badge($count, color: $count > 10 ? 'info' : 'gray'),
-        ];
-    }
 
     public static function getGlobalSearchResultDetails(Model $record): array
     {

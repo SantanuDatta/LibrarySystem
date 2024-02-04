@@ -3,6 +3,7 @@
 namespace App\Filament\Staff\Resources;
 
 use App\Filament\Staff\Resources\PublisherResource\Pages;
+use App\Http\Traits\NavigationCount;
 use App\Models\Publisher;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
@@ -23,22 +24,13 @@ use Illuminate\Support\Facades\Storage;
 
 class PublisherResource extends Resource
 {
+    use NavigationCount;
+
     protected static ?string $model = Publisher::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-paper-airplane';
 
     protected static ?string $navigationGroup = 'Books & Transactions';
-
-    public static function getNavigationItems(): array
-    {
-        [$navigationItem] = parent::getNavigationItems();
-        $count = static::getModel()::count();
-    
-        return [
-            $navigationItem
-                ->badge($count, color: $count > 10 ? 'info' : 'gray'),
-        ];
-    }
 
     public static function form(Form $form): Form
     {
@@ -96,13 +88,16 @@ class PublisherResource extends Resource
                     EditAction::make(),
                     DeleteAction::make()
                         ->before(function ($record) {
-                            Storage::disk('public')->delete($record->logo);
+                            Storage::disk('public')->delete($record);
                         }),
                 ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->before(function ($records) {
+                            Storage::disk('public')->delete($records);
+                        }),
                 ]),
             ]);
     }

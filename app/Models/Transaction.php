@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class Transaction extends Model
 {
@@ -39,7 +40,7 @@ class Transaction extends Model
         return $this->belongsTo(User::class);
     }
 
-    public static function booted()
+    public static function booted(): void
     {
         static::saving(function ($transaction) {
             $borrowedDate = Carbon::parse($transaction->borrowed_date);
@@ -53,6 +54,16 @@ class Transaction extends Model
                 $fine = $delay * 10;
             }
             $transaction->fine = $fine;
+        });
+
+        static::creating(function ($model) {
+            $cacheKey = 'NavigationCount'.class_basename($model);
+            Cache::flush($cacheKey);
+        });
+
+        static::deleting(function ($model) {
+            $cacheKey = 'NavigationCount'.class_basename($model);
+            Cache::flush($cacheKey);
         });
     }
 }

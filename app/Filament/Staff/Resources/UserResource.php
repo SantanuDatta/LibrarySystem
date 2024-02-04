@@ -3,6 +3,7 @@
 namespace App\Filament\Staff\Resources;
 
 use App\Filament\Staff\Resources\UserResource\Pages;
+use App\Http\Traits\BorrowerCount;
 use App\Models\Role;
 use App\Models\User;
 use Filament\AvatarProviders\UiAvatarsProvider;
@@ -29,22 +30,13 @@ use Illuminate\Support\Facades\Storage;
 
 class UserResource extends Resource
 {
+    use BorrowerCount;
+
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
     protected static ?string $navigationGroup = 'Settings';
-
-    public static function getNavigationItems(): array
-    {
-        [$navigationItem] = parent::getNavigationItems();
-        $count = static::getModel()::with('role')->whereRelation('role', 'name', 'borrower')->count();
-    
-        return [
-            $navigationItem
-                ->badge($count, color: $count > 10 ? 'info' : 'gray'),
-        ];
-    }
 
     public static function form(Form $form): Form
     {
@@ -89,7 +81,7 @@ class UserResource extends Resource
                                             ->imageEditor()
                                             ->avatar()
                                             ->deleteUploadedFileUsing(function ($record) {
-                                                Storage::disk('public')->delete($record);
+                                                Storage::disk('public')->delete($record->avatar_url);
                                             })
                                             ->extraAttributes([
                                                 'class' => 'justify-center',
@@ -132,7 +124,10 @@ class UserResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->before(function ($records) {
+                            Storage::disk('public')->delete($records->each->avatar_url);
+                        }),
                 ]),
             ]);
     }

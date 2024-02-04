@@ -2,16 +2,24 @@
 
 namespace App\Policies;
 
+use App\Models\Role;
 use App\Models\User;
 
 class UserPolicy
 {
+
+    public function before(User $user)
+    {
+        if ($user->role_id == Role::IS_ADMIN) {
+            return true;
+        }
+    }
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return in_array($user->role->name, ['admin', 'staff']);
+        return $user->role_id = Role::IS_STAFF;
     }
 
     /**
@@ -19,7 +27,7 @@ class UserPolicy
      */
     public function view(User $user): bool
     {
-        return in_array($user->role->name, ['admin', 'staff']);
+        return $user->role_id = Role::IS_STAFF;
     }
 
     /**
@@ -27,7 +35,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return in_array($user->role->name, ['admin', 'staff']);
+        return $user->role_id = Role::IS_STAFF;
     }
 
     /**
@@ -35,7 +43,7 @@ class UserPolicy
      */
     public function update(User $user): bool
     {
-        return in_array($user->role->name, ['admin', 'staff']);
+        return $user->role_id = Role::IS_STAFF;
     }
 
     /**
@@ -43,6 +51,6 @@ class UserPolicy
      */
     public function delete(User $user): bool
     {
-        return $user->role->name == 'admin';
+        return false;
     }
 }

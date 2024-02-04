@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -83,5 +84,28 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 
         // If avatar_url is not available, use the UiAvatarsProvider directly
         return $uiAvatarsProvider->get($this);
+    }
+
+    public static function booted(): void
+    {
+        static::creating(function ($model) {
+            $cacheKey = 'NavigationCount'.class_basename($model);
+            $borrowerKey = 'BorrowerCount'.class_basename($model);
+            if ($cacheKey) {
+                Cache::flush($cacheKey);
+            } elseif ($borrowerKey) {
+                Cache::flush($borrowerKey);
+            }
+        });
+        
+        static::deleting(function ($model) {
+            $cacheKey = 'NavigationCount'.class_basename($model);
+            $borrowerKey = 'BorrowerCount'.class_basename($model);
+            if ($cacheKey) {
+                Cache::flush($cacheKey);
+            } elseif ($borrowerKey) {
+                Cache::flush($borrowerKey);
+            }
+        });
     }
 }

@@ -23,7 +23,7 @@ class EditAuthor extends EditRecord
             DeleteAction::make()
                 ->before(function ($record) {
                     Storage::disk('public')
-                        ->delete($record->avatar);
+                        ->delete($record);
                 }),
             Action::make('reset')
                 ->outlined()

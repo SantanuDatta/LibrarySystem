@@ -23,7 +23,7 @@ class EditPublisher extends EditRecord
             DeleteAction::make()
                 ->before(function ($record) {
                     Storage::disk('public')
-                        ->delete($record->logo);
+                        ->delete($record);
                 }),
             Action::make('reset')
                 ->outlined()
