@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\GenreResource\Pages;
+use App\Filament\Admin\Resources\GenreResource\RelationManagers\BooksRelationManager;
 use App\Models\Genre;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Section;
@@ -65,7 +66,7 @@ class GenreResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            BooksRelationManager::class,
         ];
     }
 

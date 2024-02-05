@@ -19,7 +19,7 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->role_id = Role::IS_STAFF;
+        return $user->role_id == Role::IS_STAFF;
     }
 
     /**
@@ -27,7 +27,7 @@ class UserPolicy
      */
     public function view(User $user): bool
     {
-        return $user->role_id = Role::IS_STAFF;
+        return $user->role_id == Role::IS_STAFF;
     }
 
     /**
@@ -35,7 +35,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->role_id = Role::IS_STAFF;
+        return $user->role_id == Role::IS_STAFF;
     }
 
     /**
@@ -43,7 +43,7 @@ class UserPolicy
      */
     public function update(User $user): bool
     {
-        return $user->role_id = Role::IS_STAFF;
+        return $user->role_id == Role::IS_STAFF;
     }
 
     /**

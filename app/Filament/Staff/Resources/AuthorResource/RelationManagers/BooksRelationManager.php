@@ -17,16 +17,16 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\RawJs;
-use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 class BooksRelationManager extends RelationManager
@@ -54,12 +54,8 @@ class BooksRelationManager extends RelationManager
                                                     ->live()
                                                     ->afterStateUpdated(fn (Set $set) => $set('author_id', null)),
                                                 Select::make('author_id')
-                                                    ->options(
-                                                        fn (Get $get): Collection => Author::query()
-                                                            ->with('publisher')
-                                                            ->where('publisher_id', $get('publisher_id'))
-                                                            ->pluck('name', 'id')
-                                                    )
+                                                    ->options(fn (Get $get) => Author::where('publisher_id', $get('publisher_id'))
+                                                        ->pluck('name', 'id'))
                                                     ->searchable()
                                                     ->native(false)
                                                     ->preload()
@@ -143,13 +139,18 @@ class BooksRelationManager extends RelationManager
                     EditAction::make(),
                     DeleteAction::make()
                         ->before(function ($record) {
-                            Storage::disk('public')->delete($record->cover_image);
+                            Storage::disk('public')->delete($record);
                         }),
                 ]),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
+                        ->before(function ($records) {
+                            $records->each(function ($record) {
+                                Storage::disk('public')->delete($record);
+                            });
+                        }),
                 ]),
             ]);
     }

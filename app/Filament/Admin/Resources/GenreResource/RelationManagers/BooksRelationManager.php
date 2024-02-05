@@ -1,11 +1,8 @@
 <?php
 
-namespace App\Filament\Admin\Resources;
+namespace App\Filament\Admin\Resources\GenreResource\RelationManagers;
 
-use App\Filament\Admin\Resources\BookResource\Pages;
-use App\Http\Traits\NavigationCount;
 use App\Models\Author;
-use App\Models\Book;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Group;
@@ -18,10 +15,12 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Resources\Resource;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\RawJs;
+use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
@@ -29,33 +28,13 @@ use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
-class BookResource extends Resource
+class BooksRelationManager extends RelationManager
 {
-    use NavigationCount;
+    protected static string $relationship = 'books';
 
-    protected static ?string $model = Book::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-book-open';
-
-    protected static ?string $navigationGroup = 'Books & Transactions';
-
-    protected static ?string $recordTitleAttribute = 'title';
-
-    protected static ?int $globalSearchResultLimit = 20;
-
-    public static function getGlobalSearchResultDetails(Model $record): array
-    {
-        return [
-            'Author' => $record->author->name,
-            'Publisher' => $record->publisher->name,
-            'Genre' => $record->genre->name,
-        ];
-    }
-
-    public static function form(Form $form): Form
+    public function form(Form $form): Form
     {
         return $form
             ->schema([
@@ -80,7 +59,8 @@ class BookResource extends Resource
                                                         ->pluck('name', 'id'))
                                                     ->searchable()
                                                     ->native(false)
-                                                    ->preload(),
+                                                    ->preload()
+                                                    ->live(),
                                                 Select::make('genre_id')
                                                     ->relationship('genre', 'name')
                                                     ->searchable()
@@ -136,9 +116,10 @@ class BookResource extends Resource
             ]);
     }
 
-    public static function table(Table $table): Table
+    public function table(Table $table): Table
     {
         return $table
+            ->recordTitleAttribute('title')
             ->columns([
                 SpatieMediaLibraryImageColumn::make('cover_image')
                     ->collection('coverBooks')
@@ -150,6 +131,9 @@ class BookResource extends Resource
             ])
             ->filters([
                 //
+            ])
+            ->headerActions([
+                CreateAction::make(),
             ])
             ->actions([
                 ActionGroup::make([
@@ -170,21 +154,5 @@ class BookResource extends Resource
                         }),
                 ]),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListBooks::route('/'),
-            'create' => Pages\CreateBook::route('/create'),
-            'edit' => Pages\EditBook::route('/{record}/edit'),
-        ];
     }
 }

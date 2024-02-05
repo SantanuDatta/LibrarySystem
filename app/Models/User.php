@@ -89,8 +89,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public static function booted(): void
     {
         static::creating(function ($model) {
-            $cacheKey = 'NavigationCount'.class_basename($model);
-            $borrowerKey = 'BorrowerCount'.class_basename($model);
+            $cacheKey = 'NavigationCount'.class_basename($model).$model->getTable();
+            $borrowerKey = 'BorrowerCount'.class_basename($model).$model->getTable();
             if ($cacheKey) {
                 Cache::flush($cacheKey);
             } elseif ($borrowerKey) {
@@ -99,8 +99,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         });
         
         static::deleting(function ($model) {
-            $cacheKey = 'NavigationCount'.class_basename($model);
-            $borrowerKey = 'BorrowerCount'.class_basename($model);
+            $cacheKey = 'NavigationCount'.class_basename($model).$model->getTable();
+            $borrowerKey = 'BorrowerCount'.class_basename($model).$model->getTable();
             if ($cacheKey) {
                 Cache::flush($cacheKey);
             } elseif ($borrowerKey) {

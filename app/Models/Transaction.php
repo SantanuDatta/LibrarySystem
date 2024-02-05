@@ -57,12 +57,12 @@ class Transaction extends Model
         });
 
         static::creating(function ($model) {
-            $cacheKey = 'NavigationCount'.class_basename($model);
+            $cacheKey = 'NavigationCount'.class_basename($model).$model->getTable();
             Cache::flush($cacheKey);
         });
 
         static::deleting(function ($model) {
-            $cacheKey = 'NavigationCount'.class_basename($model);
+            $cacheKey = 'NavigationCount'.class_basename($model).$model->getTable();
             Cache::flush($cacheKey);
         });
     }
