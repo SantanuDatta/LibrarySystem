@@ -9,10 +9,10 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
-        "barryvdh/laravel-ide-helper": "^2.13",
-        "filament/filament": "^3.2.23",
-        "filament/spatie-laravel-media-library-plugin": "^3.2.23",
-        "filament/widgets": "^3.2.23",
+        "barryvdh/laravel-ide-helper": "^2.14",
+        "filament/filament": "^3.2.24",
+        "filament/spatie-laravel-media-library-plugin": "^3.2.24",
+        "filament/widgets": "^3.2.24",
         "guzzlehttp/guzzle": "^7.8.1",
         "joshembling/image-optimizer": "^1.3.1",
         "laravel/framework": "^10.43",
@@ -26,7 +26,7 @@
         "laravel/sail": "^1.27.3",
         "mockery/mockery": "^1.6.7",
         "nunomaduro/collision": "^7.10",
-        "pestphp/pest": "^2.33.4",
+        "pestphp/pest": "^2.33",
         "pestphp/pest-plugin-laravel": "^2.2",
         "spatie/laravel-ignition": "^2.4.1"
     },
