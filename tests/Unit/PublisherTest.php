@@ -10,6 +10,10 @@ it('has many authors', function () {
         ->create();
     expect($publisher->authors)
         ->toHaveCount(3);
+    $this->assertDatabaseHas('authors', [
+        'id' => $publisher->authors->first()->id,
+        'name' => $publisher->authors->first()->name,
+    ]);
 });
 
 it('has many authors with books', function () {
@@ -20,5 +24,8 @@ it('has many authors with books', function () {
         ->create();
     expect($publisher->authors->each(fn ($author) => $author->books))
         ->toHaveCount(3);
+    $this->assertDatabaseHas('books', [
+        'id' => $publisher->authors->first()->books->first()->id,
+        'title' => $publisher->authors->first()->books->first()->title,
+    ]);
 });
-
