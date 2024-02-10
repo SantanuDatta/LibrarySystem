@@ -9,13 +9,13 @@ use function Pest\Laravel\seed;
 
 beforeEach(function () {
     seed();
+    $this->user = User::factory()->create(['role_id' => Role::IS_BORROWER]);
 });
 
 test('book is being borrowed by a user whose role is a borrower', function () {
-    $user = User::factory()->create(['role_id' => Role::IS_BORROWER]);
     $transaction = Transaction::factory()
         ->for(Book::factory())
-        ->for($user)
+        ->for($this->user)
         ->create();
     expect($transaction->book)
         ->toBeInstanceOf(Book::class);
