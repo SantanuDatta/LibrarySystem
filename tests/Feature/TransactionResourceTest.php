@@ -5,11 +5,11 @@ use App\Models\Role;
 use App\Models\Transaction;
 use App\Models\User;
 
-use function Pest\Laravel\seed;
+use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    seed();
-    $this->user = User::factory()->create(['role_id' => Role::IS_BORROWER]);
+    actingAs($this->user = User::factory()
+        ->create(['role_id' => Role::IS_BORROWER]));
 });
 
 test('book is being borrowed by a user whose role is a borrower', function () {

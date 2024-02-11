@@ -7,7 +7,6 @@ use App\Models\User;
 
 class UserPolicy
 {
-
     public function before(User $user)
     {
         if ($user->role_id == Role::IS_ADMIN) {

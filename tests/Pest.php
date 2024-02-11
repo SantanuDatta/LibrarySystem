@@ -11,12 +11,18 @@
 |
 */
 
+use App\Models\Role;
+use App\Models\User;
+
+use function Pest\Laravel\seed;
+
 uses(
     Tests\TestCase::class,
     // Illuminate\Foundation\Testing\RefreshDatabase::class,
     Illuminate\Foundation\Testing\LazilyRefreshDatabase::class,
-)->in('Feature', 'Unit');
-
+)->beforeEach(function () {
+    seed();
+})->in('Feature');
 /*
 |--------------------------------------------------------------------------
 | Expectations
@@ -43,7 +49,15 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function asAdmin()
 {
-    // ..
+    $admin = User::where('role_id', Role::IS_ADMIN)->first();
+
+    return test()->actingAs($admin);
+}
+function asStaff()
+{
+    $staff = User::where('role_id', Role::IS_STAFF)->first();
+
+    return test()->actingAs($staff);
 }
