@@ -160,7 +160,7 @@ return [
         'exceptions'      => true,  // Exception displayer
         'log'             => true,  // Logs from Monolog (merged in messages if enabled)
         'db'              => true,  // Show database (PDO) queries and bindings
-        'views'           => false,  // Views with their data
+        'views'           => true,  // Views with their data
         'route'           => true,  // Current route information
         'auth'            => false, // Display Laravel authentication status
         'gate'            => true,  // Display Laravel Gate checks
@@ -211,7 +211,10 @@ return [
         'views' => [
             'timeline' => false,  // Add the views to the timeline (Experimental)
             'data' => false,    //Note: Can slow down the application, because the data can be quite large..
-            'exclude_paths' => [], // Add the paths which you don't want to appear in the views
+            'group' => true,
+            'exclude_paths' => [
+                'vendor/filament'
+            ], // Add the paths which you don't want to appear in the views
         ],
         'route' => [
             'label' => true,  // show complete route on bar
