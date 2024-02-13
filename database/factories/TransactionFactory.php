@@ -26,7 +26,7 @@ class TransactionFactory extends Factory
             'borrowed_for' => fake()->numberBetween(1, 30),
             'returned_date' => fake()->dateTimeThisYear(),
             'status' => BorrowedStatus::randomValue(),
-            'fine' => fake()->numberBetween(0, 1000)
+            'fine' => fake()->numberBetween(0, 1000),
         ];
     }
 }

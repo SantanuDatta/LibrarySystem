@@ -43,8 +43,10 @@ class PublisherResource extends Resource
                             ->schema([
                                 Section::make("Publisher's Profile")
                                     ->schema([
-                                        TextInput::make('name'),
-                                        DatePicker::make('founded'),
+                                        TextInput::make('name')
+                                            ->required(),
+                                        DatePicker::make('founded')
+                                            ->required(),
                                     ])->columns(2),
                             ])->columnSpan(['sm' => 2, 'md' => 2, 'xxl' => 5]),
                         Group::make()
@@ -77,7 +79,9 @@ class PublisherResource extends Resource
                     ->collection('publishers')
                     ->circular()
                     ->conversion('thumb'),
-                TextColumn::make('name'),
+                TextColumn::make('name')
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('founded')
                     ->date('d M, Y'),
             ])

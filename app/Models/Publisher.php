@@ -40,7 +40,7 @@ class Publisher extends Model implements HasMedia
             $cacheKey = 'NavigationCount'.class_basename($model).$model->getTable();
             Cache::flush($cacheKey);
         });
-        
+
         static::deleting(function ($model) {
             $cacheKey = 'NavigationCount'.class_basename($model).$model->getTable();
             Cache::flush($cacheKey);

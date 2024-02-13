@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Storage;
 class PublisherResource extends Resource
 {
     use NavigationCount;
-    
+
     protected static ?string $model = Publisher::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-paper-airplane';
@@ -43,8 +43,10 @@ class PublisherResource extends Resource
                             ->schema([
                                 Section::make("Publisher's Profile")
                                     ->schema([
-                                        TextInput::make('name'),
-                                        DatePicker::make('founded'),
+                                        TextInput::make('name')
+                                            ->required(),
+                                        DatePicker::make('founded')
+                                            ->required(),
                                     ])->columns(2),
                             ])->columnSpan(['sm' => 2, 'md' => 2, 'xxl' => 5]),
                         Group::make()
@@ -77,7 +79,9 @@ class PublisherResource extends Resource
                     ->collection('publishers')
                     ->circular()
                     ->conversion('thumb'),
-                TextColumn::make('name'),
+                TextColumn::make('name')
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('founded')
                     ->date('d M, Y'),
             ])

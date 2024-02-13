@@ -13,6 +13,7 @@ class UserPolicy
             return true;
         }
     }
+
     /**
      * Determine whether the user can view any models.
      */

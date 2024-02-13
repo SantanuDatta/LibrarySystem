@@ -64,13 +64,16 @@ class AuthorResource extends Resource
                             ->schema([
                                 Section::make("Author's Profile")
                                     ->schema([
-                                        TextInput::make('name'),
+                                        TextInput::make('name')
+                                            ->required(),
                                         Select::make('publisher_id')
                                             ->relationship('publisher', 'name')
                                             ->native(false)
                                             ->searchable()
-                                            ->preload(),
-                                        DatePicker::make('date_of_birth'),
+                                            ->preload()
+                                            ->required(),
+                                        DatePicker::make('date_of_birth')
+                                            ->required(),
                                         RichEditor::make('bio')
                                             ->columnSpanFull()
                                             ->disableToolbarButtons([
@@ -113,6 +116,10 @@ class AuthorResource extends Resource
                     ->conversion('thumb')
                     ->extraImgAttributes(['loading' => 'lazy']),
                 TextColumn::make('name')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('publisher.name')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('date_of_birth')
                     ->date('d M, Y'),

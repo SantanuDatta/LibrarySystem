@@ -97,7 +97,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
                 Cache::flush($borrowerKey);
             }
         });
-        
+
         static::deleting(function ($model) {
             $cacheKey = 'NavigationCount'.class_basename($model).$model->getTable();
             $borrowerKey = 'BorrowerCount'.class_basename($model).$model->getTable();

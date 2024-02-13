@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@gmail.com',
             'password' => 'developer',
         ]);
-        
+
         $staffs = User::factory(2)->role('staff')
             ->state(new Sequence(
                 [
@@ -43,12 +43,12 @@ class DatabaseSeeder extends Seeder
                     'password' => 'staff002',
                 ],
             ))->create();
-        
+
         $users = User::factory(7)->role('borrower')
             ->create();
 
         $publishers = Publisher::factory(10)->create();
-        
+
         $authors = Author::factory(10)->recycle($publishers)->create();
 
         $genres = Genre::factory(10)->create();
@@ -58,11 +58,11 @@ class DatabaseSeeder extends Seeder
             ->recycle($authors)
             ->recycle($genres)
             ->create();
-        
+
         $transaction = Transaction::factory(10)
             ->recycle($users)
             ->recycle($books)
             ->create();
-        
+
     }
 }

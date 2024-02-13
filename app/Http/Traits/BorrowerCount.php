@@ -13,6 +13,7 @@ trait BorrowerCount
             return static::getModel()::with('role')->whereRelation('role', 'name', 'borrower')->count();
         });
         [$navigationItem] = parent::getNavigationItems();
+
         return [
             $navigationItem
                 ->badge($cachedCount, color: $cachedCount > 10 ? 'info' : 'primary'),

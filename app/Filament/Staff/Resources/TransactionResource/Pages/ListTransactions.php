@@ -18,7 +18,7 @@ class ListTransactions extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
-    
+
     public function getTabs(): array
     {
         return [

@@ -13,6 +13,7 @@ trait NavigationCount
             return static::getModel()::count();
         });
         [$navigationItem] = parent::getNavigationItems();
+
         return [
             $navigationItem
                 ->badge($cachedCount, color: $cachedCount > 10 ? 'info' : 'primary'),

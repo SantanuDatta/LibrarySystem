@@ -43,7 +43,7 @@ class TransactionObserver
                 ->success()
                 ->sendToDatabase($this->admin);
         }
-        
+
         if ($transaction->status == BorrowedStatus::Delayed) {
             Notification::make()
                 ->title('A Borrower Delayed to return a book')
