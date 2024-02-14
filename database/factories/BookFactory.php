@@ -24,7 +24,7 @@ class BookFactory extends Factory
             'publisher_id' => Publisher::factory(),
             'genre_id' => Genre::factory(),
             'title' => fake()->name(),
-            'isbn' => fake()->isbn13(),
+            'isbn' => fake()->unique()->isbn13(),
             'price' => fake()->randomFloat(2, 0, 100),
             'description' => fake()->realText(600),
             'stock' => fake()->numberBetween(0, 100),

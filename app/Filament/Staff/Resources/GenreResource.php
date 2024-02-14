@@ -32,7 +32,8 @@ class GenreResource extends Resource
             ->schema([
                 Section::make()
                     ->schema([
-                        TextInput::make('name'),
+                        TextInput::make('name')
+                            ->required(),
                         ColorPicker::make('bg_color'),
                         ColorPicker::make('text_color'),
                     ])->columns(3),
@@ -43,7 +44,9 @@ class GenreResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name'),
+                TextColumn::make('name')
+                    ->sortable()
+                    ->searchable(),
                 ColorColumn::make('bg_color'),
                 ColorColumn::make('text_color'),
             ])

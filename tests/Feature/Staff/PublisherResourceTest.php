@@ -18,32 +18,57 @@ beforeEach(function () {
 });
 
 describe('Publisher List Page', function () {
+    beforeEach(function () {
+        $this->list = livewire(ListPublishers::class, [
+            'record' => $this->publisher,
+            'panel' => 'staff',
+        ]);
+    });
+
     it('can render the list page', function () {
-        livewire(ListPublishers::class, ['record' => $this->publisher, 'panel' => 'staff'])
+        $this->list
             ->assertSuccessful();
     });
 
     it('can render publisher logo, name and founded', function () {
-        livewire(ListPublishers::class, ['record' => $this->publisher, 'panel' => 'staff'])
-            ->assertCanRenderTableColumn('logo')
-            ->assertCanRenderTableColumn('name')
-            ->assertCanRenderTableColumn('founded');
+        $expectedColumns = [
+            'logo',
+            'name',
+            'founded',
+        ];
+
+        foreach ($expectedColumns as $column) {
+            $this->list
+                ->assertTableColumnExists($column)
+                ->assertSuccessful();
+        }
     });
 
     it('can get publisher logo, name and founded', function () {
         $publishers = $this->publisher;
         $publisher = $publishers->first();
 
-        livewire(ListPublishers::class, ['record' => $publisher, 'panel' => 'staff'])
+        $this->list
             ->assertTableColumnStateSet('logo', $publisher->logo, record: $publisher)
             ->assertTableColumnStateSet('name', $publisher->name, record: $publisher)
             ->assertTableColumnStateSet('founded', $publisher->founded, record: $publisher);
     });
+
+    it('can create a publisher but cannot delete it', function () {
+        $this->list
+            ->assertActionEnabled('create')
+            ->assertTableActionDisabled('delete', $this->publisher);
+    });
 });
 
 describe('Publisher Create Page', function () {
+    beforeEach(function () {
+        $this->create = livewire(CreatePublisher::class, [
+            'panel' => 'staff',
+        ]);
+    });
     it('can render the create page', function () {
-        livewire(CreatePublisher::class, ['panel' => 'staff'])
+        $this->create
             ->assertSuccessful();
     });
 
@@ -52,7 +77,7 @@ describe('Publisher Create Page', function () {
 
         $newLogo = UploadedFile::fake()->image('new_logo.jpg');
 
-        livewire(CreatePublisher::class)
+        $this->create
             ->fillForm([
                 'name' => $newPublisher->name,
                 'founded' => $newPublisher->founded,
@@ -79,7 +104,7 @@ describe('Publisher Create Page', function () {
     });
 
     it('can validate form data on create', function (Publisher $newPublisher) {
-        livewire(CreatePublisher::class)
+        $this->create
             ->call('create')
             ->assertHasFormErrors();
         assertDatabaseMissing('publishers', [
@@ -90,77 +115,72 @@ describe('Publisher Create Page', function () {
         [fn () => Publisher::factory()->state(['name' => null])->make(), 'Missing Name'],
         [fn () => Publisher::factory()->state(['founded' => null])->make(), 'Missing Founded'],
     ]);
+});
 
-    it('can create a publisher but cannot delete it', function () {
-        livewire(ListPublishers::class, ['record' => $this->publisher, 'panel' => 'staff'])
-            ->assertActionEnabled('create')
-            ->assertTableActionDisabled('delete', $this->publisher);
-    });
-
-    describe('Publisher Edit Page', function () {
-        it('can render the edit page', function () {
-            livewire(EditPublisher::class, ['record' => $this->publisher->getRouteKey(), 'panel' => 'staff'])
-                ->assertSuccessful();
-        });
-
-        it('can edit a publisher', function () {
-            $publisher = $this->publisher;
-
-            $updatePublisherData = Publisher::factory()
-                ->state([
-                    'name' => fake()->name(),
-                    'founded' => fake()->dateTimeThisCentury(),
-                ])
-                ->create();
-
-            $updateLogoPath = UploadedFile::fake()->image('update_logo.jpg');
-
-            livewire(EditPublisher::class, [
-                'record' => $publisher->getRouteKey(),
-            ])
-                ->fillForm([
-                    'name' => $updatePublisherData->name,
-                    'founded' => $updatePublisherData->founded,
-                    'logo' => $updateLogoPath,
-                ])
-                ->call('save')
-                ->assertHasNoFormErrors();
-
-            $updatedPublisher = $publisher->refresh();
-
-            expect($updatedPublisher)
-                ->name->toBe($updatePublisherData->name)
-                ->founded->format('Y-m-d')->toBe($updatePublisherData->founded->format('Y-m-d'));
-            assertNotNull($updatedPublisher->getFirstMedia('publishers'));
-
-            assertDatabaseHas('publishers', [
-                'name' => $updatedPublisher->name,
-                'founded' => $updatedPublisher->founded,
-            ]);
-
-            assertDatabaseHas('media', [
-                'model_id' => $updatedPublisher->id,
-                'model_type' => Publisher::class,
-                'uuid' => $updatedPublisher->getFirstMedia('publishers')->uuid,
-                'collection_name' => 'publishers',
-            ]);
-        });
-
-        it('can validate form data on edit', function (Publisher $updatedPublisher) {
-            $publisher = $this->publisher;
-
-            livewire(EditPublisher::class, [
-                'record' => $publisher->getRouteKey(),
-            ])
-                ->fillForm([
-                    'name' => $updatedPublisher->name,
-                    'founded' => $updatedPublisher->founded,
-                ])
-                ->call('save')
-                ->assertHasFormErrors();
-        })->with([
-            [fn () => Publisher::factory()->state(['name' => null])->make(), 'Missing Name'],
-            [fn () => Publisher::factory()->state(['founded' => null])->make(), 'Missing Founded'],
+describe('Publisher Edit Page', function () {
+    beforeEach(function () {
+        $this->edit = livewire(EditPublisher::class, [
+            'record' => $this->publisher->getRouteKey(),
+            'panel' => 'staff',
         ]);
     });
+
+    it('can render the edit page', function () {
+        $this->edit
+            ->assertSuccessful();
+    });
+
+    it('can edit a publisher', function () {
+        $publisher = $this->publisher;
+
+        $updatePublisherData = Publisher::factory()
+            ->state([
+                'name' => fake()->name(),
+                'founded' => fake()->dateTimeThisCentury(),
+            ])
+            ->create();
+
+        $updateLogoPath = UploadedFile::fake()->image('update_logo.jpg');
+
+        $this->edit
+            ->fillForm([
+                'name' => $updatePublisherData->name,
+                'founded' => $updatePublisherData->founded,
+                'logo' => $updateLogoPath,
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $updatedPublisher = $publisher->refresh();
+
+        expect($updatedPublisher)
+            ->name->toBe($updatePublisherData->name)
+            ->founded->format('Y-m-d')->toBe($updatePublisherData->founded->format('Y-m-d'));
+        assertNotNull($updatedPublisher->getFirstMedia('publishers'));
+
+        assertDatabaseHas('publishers', [
+            'name' => $updatedPublisher->name,
+            'founded' => $updatedPublisher->founded,
+        ]);
+
+        assertDatabaseHas('media', [
+            'model_id' => $updatedPublisher->id,
+            'model_type' => Publisher::class,
+            'uuid' => $updatedPublisher->getFirstMedia('publishers')->uuid,
+            'collection_name' => 'publishers',
+        ]);
+    });
+
+    it('can validate form data on edit', function (Publisher $updatedPublisher) {
+        $this->edit
+            ->fillForm([
+                'name' => $updatedPublisher->name,
+                'founded' => $updatedPublisher->founded,
+            ])
+            ->call('save')
+            ->assertHasFormErrors();
+    })->with([
+        [fn () => Publisher::factory()->state(['name' => null])->make(), 'Missing Name'],
+        [fn () => Publisher::factory()->state(['founded' => null])->make(), 'Missing Founded'],
+    ]);
 });

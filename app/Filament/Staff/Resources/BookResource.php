@@ -68,14 +68,16 @@ class BookResource extends Resource
                                     ->schema([
                                         Group::make()
                                             ->schema([
-                                                TextInput::make('title'),
+                                                TextInput::make('title')
+                                                    ->required(),
                                                 Select::make('publisher_id')
                                                     ->relationship('publisher', 'name')
                                                     ->searchable()
                                                     ->native(false)
                                                     ->preload()
                                                     ->live()
-                                                    ->afterStateUpdated(fn (Set $set) => $set('author_id', null)),
+                                                    ->afterStateUpdated(fn (Set $set) => $set('author_id', null))
+                                                    ->required(),
                                                 Select::make('author_id')
                                                     ->options(
                                                         fn (Get $get): Collection => Author::query()
@@ -86,28 +88,34 @@ class BookResource extends Resource
                                                     ->searchable()
                                                     ->native(false)
                                                     ->preload()
-                                                    ->live(),
+                                                    ->live()
+                                                    ->required(),
                                                 Select::make('genre_id')
                                                     ->relationship('genre', 'name')
                                                     ->searchable()
                                                     ->native(false)
-                                                    ->preload(),
+                                                    ->preload()
+                                                    ->required(),
                                             ])->columns(2),
                                         Group::make()
                                             ->schema([
                                                 TextInput::make('isbn')
                                                     ->prefixIcon('heroicon-o-qr-code')
                                                     ->prefixIconColor('white')
-                                                    ->numeric(),
+                                                    ->numeric()
+                                                    ->required()
+                                                    ->unique(ignoreRecord: true),
                                                 TextInput::make('price')
                                                     ->prefix('$')
                                                     ->mask(RawJs::make('$money($input)'))
                                                     ->stripCharacters(',')
-                                                    ->numeric(),
+                                                    ->numeric()
+                                                    ->required(),
                                                 TextInput::make('stock')
                                                     ->prefixIcon('heroicon-o-archive-box')
                                                     ->prefixIconColor('white')
-                                                    ->numeric(),
+                                                    ->numeric()
+                                                    ->required(),
                                             ])->columns(3),
                                         RichEditor::make('description')
                                             ->disableToolbarButtons(['attachFiles'])
@@ -134,7 +142,8 @@ class BookResource extends Resource
                                     ]),
                                 Section::make()
                                     ->schema([
-                                        DatePicker::make('published'),
+                                        DatePicker::make('published')
+                                            ->required(),
                                         Toggle::make('available'),
                                     ]),
                             ])->columnSpan(['sm' => 2, 'md' => 1, 'xxl' => 1]),
@@ -149,8 +158,12 @@ class BookResource extends Resource
                 SpatieMediaLibraryImageColumn::make('cover_image')
                     ->collection('coverBooks')
                     ->conversion('thumb'),
-                TextColumn::make('title'),
-                TextColumn::make('author.name'),
+                TextColumn::make('title')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('author.name')
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('stock'),
                 ToggleColumn::make('available'),
             ])

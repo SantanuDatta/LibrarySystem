@@ -23,35 +23,58 @@ beforeEach(function () {
 });
 
 describe('Author List Page', function () {
+    beforeEach(function () {
+        $this->list = livewire(ListAuthors::class, [
+            'record' => $this->author,
+            'panel' => 'staff',
+        ]);
+    });
+
     it('can render the list page', function () {
-        livewire(ListAuthors::class, ['record' => $this->author, 'panel' => 'staff'])
+        $this->list
             ->assertSuccessful();
     });
 
     it('can render author avatar, name, publisher and date of birth columns', function () {
-        livewire(ListAuthors::class, ['record' => $this->author, 'panel' => 'staff'])
-            ->assertCanRenderTableColumn('avatar')
-            ->assertCanRenderTableColumn('name')
-            ->assertCanRenderTableColumn('publisher.name')
-            ->assertCanRenderTableColumn('date_of_birth')
-            ->assertSuccessful();
+        $expectedColumns = [
+            'avatar',
+            'name',
+            'publisher.name',
+            'date_of_birth',
+        ];
+
+        foreach ($expectedColumns as $column) {
+            $this->list
+                ->assertTableColumnExists($column)
+                ->assertSuccessful();
+        }
     });
 
     it('can get authors avatar, name, publisher and date of birth', function () {
         $authors = $this->author;
         $author = $authors->first();
 
-        livewire(ListAuthors::class, ['record' => $author, 'panel' => 'staff'])
+        $this->list
             ->assertTableColumnStateSet('avatar', $author->avatar, record: $author)
             ->assertTableColumnStateSet('name', $author->name, record: $author)
             ->assertTableColumnStateSet('publisher.name', $author->publisher->name, record: $author)
             ->assertTableColumnStateSet('date_of_birth', $author->date_of_birth, record: $author);
     });
+
+    it('can create a new author but cannot delete an author', function () {
+        $this->list
+            ->assertActionEnabled('create')
+            ->assertTableActionDisabled('delete', $this->author);
+    });
 });
 
 describe('Author Create Page', function () {
+    beforeEach(function () {
+        $this->create = livewire(CreateAuthor::class, ['panel' => 'staff']);
+    });
+
     it('can render the create page', function () {
-        livewire(CreateAuthor::class, ['panel' => 'staff'])
+        $this->create
             ->assertSuccessful();
     });
 
@@ -62,7 +85,7 @@ describe('Author Create Page', function () {
 
         $avatarPath = UploadedFile::fake()->image('avatar.jpg');
 
-        livewire(CreateAuthor::class)
+        $this->create
             ->fillForm([
                 'name' => $newAuthor->name,
                 'publisher_id' => $newAuthor->publisher_id,
@@ -73,7 +96,7 @@ describe('Author Create Page', function () {
             ->call('create')
             ->assertHasNoFormErrors();
 
-        $createdAuthor = Author::where('name', $newAuthor->name)->first();
+        $createdAuthor = Author::whereName($newAuthor->name)->first();
 
         assertTrue($createdAuthor->hasMedia('avatars'));
 
@@ -93,9 +116,10 @@ describe('Author Create Page', function () {
     });
 
     it('can validate form data on create', function (Author $newAuthor) {
-        livewire(CreateAuthor::class)
+        $this->create
             ->call('create')
             ->assertHasFormErrors();
+
         assertDatabaseMissing('authors', [
             'name' => $newAuthor->name,
             'publisher_id' => $newAuthor->publisher_id,
@@ -106,17 +130,18 @@ describe('Author Create Page', function () {
         [fn () => Author::factory()->state(['publisher_id' => null])->make(), 'Missing Publisher'],
         [fn () => Author::factory()->state(['date_of_birth' => null])->make(), 'Missing Date of Birth'],
     ]);
-
-    it('can create a new author but cannot delete an author', function () {
-        livewire(ListAuthors::class, ['record' => $this->author, 'panel' => 'staff'])
-            ->assertActionEnabled('create')
-            ->assertTableActionDisabled('delete', $this->author);
-    });
 });
 
 describe('Author Edit Page', function () {
+    beforeEach(function () {
+        $this->edit = livewire(EditAuthor::class, [
+            'record' => $this->author->getRouteKey(),
+            'panel' => 'staff',
+        ]);
+    });
+
     it('can render the edit page', function () {
-        livewire(EditAuthor::class, ['record' => $this->author->getRouteKey(), 'panel' => 'staff'])
+        $this->edit
             ->assertSuccessful();
     });
 
@@ -135,9 +160,7 @@ describe('Author Edit Page', function () {
 
         $updatedAvatarPath = UploadedFile::fake()->image('new_avatar_image.jpg');
 
-        livewire(EditAuthor::class, [
-            'record' => $author->getRouteKey(),
-        ])
+        $this->edit
             ->fillForm([
                 'name' => $updateAuthorData->name,
                 'publisher_id' => $updateAuthorData->publisher_id,
@@ -173,11 +196,7 @@ describe('Author Edit Page', function () {
     });
 
     it('can validate form data on edit', function (Author $updatedAuthor) {
-        $author = $this->author;
-
-        livewire(EditAuthor::class, [
-            'record' => $author->getRouteKey(),
-        ])
+        $this->edit
             ->fillForm([
                 'name' => $updatedAuthor->name,
                 'publisher_id' => $updatedAuthor->publisher_id,

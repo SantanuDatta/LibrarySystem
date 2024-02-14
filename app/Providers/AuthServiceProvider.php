@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Models\Author;
 use App\Models\Book;
+use App\Models\Genre;
 use App\Models\Publisher;
 use App\Models\Transaction;
 use App\Models\User;
@@ -22,6 +23,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         User::class => UserPolicy::class,
         Book::class => UserPolicy::class,
+        Genre::class => UserPolicy::class,
         Author::class => UserPolicy::class,
         Publisher::class => UserPolicy::class,
         Transaction::class => UserPolicy::class,
