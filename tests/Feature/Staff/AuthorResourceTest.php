@@ -12,7 +12,6 @@ use Illuminate\Http\UploadedFile;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Livewire\livewire;
-use function PHPUnit\Framework\assertNotNull;
 use function PHPUnit\Framework\assertTrue;
 
 beforeEach(function () {
@@ -178,7 +177,8 @@ describe('Author Edit Page', function () {
             ->publisher_id->toBe($updatedAuthor->publisher_id)
             ->date_of_birth->format('Y-m-d')->toBe($updatedAuthor->date_of_birth->format('Y-m-d'))
             ->bio->toBe($updatedAuthor->bio);
-        assertNotNull($updatedAuthor->getFirstMedia('avatars'));
+
+        expect($updatedAuthor->getFirstMedia('avatars'))->not->toBeNull();
 
         assertDatabaseHas('authors', [
             'name' => $updatedAuthor->name,
@@ -193,6 +193,7 @@ describe('Author Edit Page', function () {
             'uuid' => $updatedAuthor->getFirstMedia('avatars')->uuid,
             'collection_name' => 'avatars',
         ]);
+
     });
 
     it('can validate form data on edit', function (Author $updatedAuthor) {

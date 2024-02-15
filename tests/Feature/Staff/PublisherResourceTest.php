@@ -9,7 +9,6 @@ use Illuminate\Http\UploadedFile;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Livewire\livewire;
-use function PHPUnit\Framework\assertNotNull;
 use function PHPUnit\Framework\assertTrue;
 
 beforeEach(function () {
@@ -154,9 +153,10 @@ describe('Publisher Edit Page', function () {
         $updatedPublisher = $publisher->refresh();
 
         expect($updatedPublisher)
-            ->name->toBe($updatePublisherData->name)
-            ->founded->format('Y-m-d')->toBe($updatePublisherData->founded->format('Y-m-d'));
-        assertNotNull($updatedPublisher->getFirstMedia('publishers'));
+            ->name->toBe($updatedPublisher->name)
+            ->founded->format('Y-m-d')->toBe($updatedPublisher->founded->format('Y-m-d'));
+
+        expect($updatedPublisher->getFirstMedia('publishers'))->not->toBeNull();
 
         assertDatabaseHas('publishers', [
             'name' => $updatedPublisher->name,

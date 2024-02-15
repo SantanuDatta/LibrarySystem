@@ -9,7 +9,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
-        "barryvdh/laravel-ide-helper": "^2.14",
+        "barryvdh/laravel-ide-helper": "^2.15",
         "filament/filament": "^3.2.34",
         "filament/spatie-laravel-media-library-plugin": "^3.2.34",
         "filament/widgets": "^3.2.34",
@@ -20,7 +20,7 @@
         "laravel/tinker": "^2.9"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.10.2",
+        "barryvdh/laravel-debugbar": "^3.10.4",
         "fakerphp/faker": "^1.23.1",
         "laravel/pint": "^1.13.11",
         "laravel/sail": "^1.27.4",

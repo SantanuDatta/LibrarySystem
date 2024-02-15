@@ -12,7 +12,6 @@ use Illuminate\Http\UploadedFile;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Livewire\livewire;
-use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
 
 beforeEach(function () {
@@ -130,7 +129,7 @@ describe('Book Create Page', function () {
         ]);
     });
 
-    it('can validate form on create', function (Book $newBook) {
+    it('can validate form data on create', function (Book $newBook) {
         $this->create
             ->call('create')
             ->assertHasFormErrors();
@@ -170,7 +169,6 @@ describe('Book Edit Page', function () {
             ->assertSuccessful();
     });
 
-    // Work in progress
     it('can update the book', function () {
         $book = $this->book;
 
@@ -192,7 +190,7 @@ describe('Book Edit Page', function () {
             ])
             ->create();
 
-        $updateBookCover = UploadedFile::fake()->image('new_book_cover.jpg');
+        $updateBookCover = UploadedFile::fake()->image('update_book_cover.jpg');
 
         $this->edit
             ->fillForm([
@@ -200,7 +198,6 @@ describe('Book Edit Page', function () {
                 'publisher_id' => $updatedBookData->publisher_id,
                 'author_id' => $updatedBookData->author_id,
                 'genre_id' => $updatedBookData->genre_id,
-                'isbn' => $updatedBookData->isbn,
                 'price' => $updatedBookData->price,
                 'description' => $updatedBookData->description,
                 'stock' => $updatedBookData->stock,
@@ -208,6 +205,7 @@ describe('Book Edit Page', function () {
                 'published' => $updatedBookData->published,
                 'cover_image' => $updateBookCover,
             ])
+            ->set('isbn', $updatedBookData->isbn)
             ->call('save')
             ->assertHasNoFormErrors();
 
@@ -223,16 +221,15 @@ describe('Book Edit Page', function () {
             ->description->toBe($updatedBook->description)
             ->stock->toBe($updatedBook->stock)
             ->available->toBe($updatedBook->available)
-            ->published->toBe($updatedBook->published);
+            ->published->format('Y-m-d')->toBe($updatedBook->published->format('Y-m-d'));
 
-        assertNull($updatedBook->getFirstMedia('coverBooks'));
+        expect($updatedBook->getFirstMedia('coverBooks'))->not->toBeNull();
 
         assertDatabaseHas('books', [
             'title' => $updatedBook->title,
             'publisher_id' => $updatedBook->publisher_id,
             'author_id' => $updatedBook->author_id,
             'genre_id' => $updatedBook->genre_id,
-            'isbn' => $updatedBook->isbn,
             'price' => $updatedBook->price,
             'description' => $updatedBook->description,
             'stock' => $updatedBook->stock,
@@ -248,4 +245,28 @@ describe('Book Edit Page', function () {
         ]);
     });
 
+    it('can validate form data on edit', function (Book $updateBook) {
+        $this->edit
+            ->fillForm([
+                'title' => $updateBook->title,
+                'publisher_id' => $updateBook->publisher_id,
+                'author_id' => $updateBook->author_id,
+                'genre_id' => $updateBook->genre_id,
+                'price' => $updateBook->price,
+                'isbn' => $updateBook->isbn,
+                'stock' => $updateBook->stock,
+                'published' => $updateBook->published,
+            ])
+            ->call('save')
+            ->assertHasFormErrors();
+    })->with([
+        [fn () => Book::factory()->state(['title' => null])->make(), 'Missing Title'],
+        [fn () => Book::factory()->state(['publisher_id' => null])->make(), 'Missing Publisher'],
+        [fn () => Book::factory()->state(['author_id' => null])->make(), 'Missing Author'],
+        [fn () => Book::factory()->state(['genre_id' => null])->make(), 'Missing Genre'],
+        [fn () => Book::factory()->state(['isbn' => null])->make(), 'Missing ISBN'],
+        [fn () => Book::factory()->state(['price' => null])->make(), 'Missing Price'],
+        [fn () => Book::factory()->state(['stock' => null])->make(), 'Missing Stock'],
+        [fn () => Book::factory()->state(['published' => null])->make(), 'Missing Published Date'],
+    ]);
 });
