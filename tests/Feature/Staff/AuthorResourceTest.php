@@ -7,6 +7,7 @@ use App\Filament\Staff\Resources\AuthorResource\RelationManagers\BooksRelationMa
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\Publisher;
+use Filament\Actions\DeleteAction;
 use Illuminate\Http\UploadedFile;
 
 use function Pest\Laravel\assertDatabaseHas;
@@ -60,7 +61,7 @@ describe('Author List Page', function () {
             ->assertTableColumnStateSet('date_of_birth', $author->date_of_birth, record: $author);
     });
 
-    it('can create a new author but cannot delete an author', function () {
+    it('can create a new author but can not delete an author', function () {
         $this->list
             ->assertActionEnabled('create')
             ->assertTableActionDisabled('delete', $this->author);
@@ -87,7 +88,7 @@ describe('Author Create Page', function () {
         $this->create
             ->fillForm([
                 'name' => $newAuthor->name,
-                'publisher_id' => $newAuthor->publisher_id,
+                'publisher_id' => $newAuthor->publisher->getKey(),
                 'date_of_birth' => $newAuthor->date_of_birth,
                 'bio' => $newAuthor->bio,
                 'avatar' => $avatarPath,
@@ -101,7 +102,7 @@ describe('Author Create Page', function () {
 
         assertDatabaseHas('authors', [
             'name' => $newAuthor->name,
-            'publisher_id' => $newAuthor->publisher_id,
+            'publisher_id' => $newAuthor->publisher->getKey(),
             'date_of_birth' => $newAuthor->date_of_birth,
             'bio' => $newAuthor->bio,
         ]);
@@ -149,20 +150,14 @@ describe('Author Edit Page', function () {
 
         $updateAuthorData = Author::factory()
             ->has(Publisher::factory(), relationship: 'publisher')
-            ->state([
-                'name' => fake()->name,
-                'publisher_id' => Publisher::factory(),
-                'date_of_birth' => fake()->dateTimeThisCentury(),
-                'bio' => fake()->realText(500),
-            ])
-            ->create();
+            ->make();
 
         $updatedAvatarPath = UploadedFile::fake()->image('new_avatar_image.jpg');
 
         $this->edit
             ->fillForm([
                 'name' => $updateAuthorData->name,
-                'publisher_id' => $updateAuthorData->publisher_id,
+                'publisher_id' => $updateAuthorData->publisher->getKey(),
                 'date_of_birth' => $updateAuthorData->date_of_birth,
                 'bio' => $updateAuthorData->bio,
                 'avatar' => $updatedAvatarPath,
@@ -174,7 +169,7 @@ describe('Author Edit Page', function () {
 
         expect($updatedAuthor)
             ->name->toBe($updatedAuthor->name)
-            ->publisher_id->toBe($updatedAuthor->publisher_id)
+            ->publisher_id->toBe($updatedAuthor->publisher->getKey())
             ->date_of_birth->format('Y-m-d')->toBe($updatedAuthor->date_of_birth->format('Y-m-d'))
             ->bio->toBe($updatedAuthor->bio);
 
@@ -182,7 +177,7 @@ describe('Author Edit Page', function () {
 
         assertDatabaseHas('authors', [
             'name' => $updatedAuthor->name,
-            'publisher_id' => $updatedAuthor->publisher_id,
+            'publisher_id' => $updatedAuthor->publisher->getKey(),
             'date_of_birth' => $updatedAuthor->date_of_birth,
             'bio' => $updatedAuthor->bio,
         ]);
@@ -222,5 +217,12 @@ describe('Author Edit Page', function () {
             'ownerRecord' => $author,
             'pageClass' => EditAuthor::class,
         ])->assertSuccessful();
+    });
+
+    it('can not delete an author', function () {
+        $this->author;
+
+        $this->edit
+            ->assertActionHidden(DeleteAction::class);
     });
 });

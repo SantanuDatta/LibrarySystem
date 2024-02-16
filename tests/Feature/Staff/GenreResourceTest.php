@@ -6,6 +6,7 @@ use App\Filament\Staff\Resources\GenreResource\Pages\ListGenres;
 use App\Filament\Staff\Resources\GenreResource\RelationManagers\BooksRelationManager;
 use App\Models\Book;
 use App\Models\Genre;
+use Filament\Actions\DeleteAction;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
@@ -52,7 +53,7 @@ describe('Genre List Page', function () {
             ->assertTableColumnStateSet('text_color', $genre->text_color, record: $genre);
     });
 
-    it('can create a genre but cannot delete it', function () {
+    it('can create a genre but can not delete it', function () {
         $this->list
             ->assertActionEnabled('create')
             ->assertTableActionDisabled('delete', $this->genre);
@@ -117,12 +118,7 @@ describe('Genre Edit Page', function () {
         $genre = $this->genre;
 
         $updatedGenre = Genre::factory()
-            ->state([
-                'name' => fake()->name(),
-                'bg_color' => fake()->hexColor(),
-                'text_color' => fake()->hexColor(),
-            ])
-            ->create();
+            ->make();
 
         $this->edit
             ->fillForm([
@@ -133,7 +129,7 @@ describe('Genre Edit Page', function () {
             ->call('save')
             ->assertHasNoFormErrors();
 
-        expect($this->genre->refresh())
+        expect($genre->refresh())
             ->name->toBe($updatedGenre->name)
             ->bg_color->toBe($updatedGenre->bg_color)
             ->text_color->toBe($updatedGenre->text_color);
@@ -165,5 +161,12 @@ describe('Genre Edit Page', function () {
             'ownerRecord' => $author,
             'pageClass' => EditAuthor::class,
         ])->assertSuccessful();
+    });
+
+    it('can not delete a genre', function () {
+        $this->genre;
+
+        $this->edit
+            ->assertActionHidden(DeleteAction::class);
     });
 });

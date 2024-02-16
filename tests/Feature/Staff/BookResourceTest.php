@@ -7,6 +7,7 @@ use App\Models\Author;
 use App\Models\Book;
 use App\Models\Genre;
 use App\Models\Publisher;
+use Filament\Actions\DeleteAction;
 use Illuminate\Http\UploadedFile;
 
 use function Pest\Laravel\assertDatabaseHas;
@@ -62,7 +63,7 @@ describe('Book List Page', function () {
             ->assertTableColumnStateSet('available', $book->available, record: $book);
     });
 
-    it('can create a new book but cannot delete the book', function () {
+    it('can create a new book but can not delete the book', function () {
         $this->list
             ->assertActionEnabled('create')
             ->assertTableActionDisabled('delete', $this->book);
@@ -89,9 +90,9 @@ describe('Book Create Page', function () {
 
         $this->create
             ->fillForm([
-                'publisher_id' => $newBook->publisher_id,
-                'author_id' => $newBook->author_id,
-                'genre_id' => $newBook->genre_id,
+                'publisher_id' => $newBook->publisher->getKey(),
+                'author_id' => $newBook->author->getKey(),
+                'genre_id' => $newBook->genre->getKey(),
                 'title' => $newBook->title,
                 'cover_image' => $coverTitlePath,
                 'isbn' => $newBook->isbn,
@@ -109,9 +110,9 @@ describe('Book Create Page', function () {
         assertTrue($createdBook->hasMedia('coverBooks'));
 
         assertDatabaseHas('books', [
-            'publisher_id' => $newBook->publisher_id,
-            'author_id' => $newBook->author_id,
-            'genre_id' => $newBook->genre_id,
+            'publisher_id' => $newBook->publisher->getKey(),
+            'author_id' => $newBook->author->getKey(),
+            'genre_id' => $newBook->genre->getKey(),
             'title' => $newBook->title,
             'isbn' => $newBook->isbn,
             'price' => $newBook->price,
@@ -169,6 +170,24 @@ describe('Book Edit Page', function () {
             ->assertSuccessful();
     });
 
+    it('can retrieve data', function () {
+        $book = $this->book;
+
+        $this->edit
+            ->assertFormSet([
+                'author_id' => $book->author->getKey(),
+                'publisher_id' => $book->publisher->getKey(),
+                'genre_id' => $book->genre->getKey(),
+                'title' => $book->title,
+                'isbn' => $book->isbn,
+                'price' => $book->price,
+                'description' => $book->description,
+                'stock' => $book->stock,
+                'available' => $book->available,
+                'published' => $book->published->format('Y-m-d'),
+            ]);
+    });
+
     it('can update the book', function () {
         $book = $this->book;
 
@@ -176,28 +195,17 @@ describe('Book Edit Page', function () {
             ->has(Author::factory(), relationship: 'author')
             ->has(Publisher::factory(), relationship: 'publisher')
             ->has(Genre::factory(), relationship: 'genre')
-            ->state([
-                'author_id' => Author::factory(),
-                'publisher_id' => Publisher::factory(),
-                'genre_id' => Genre::factory(),
-                'title' => fake()->name(),
-                'isbn' => fake()->unique()->isbn13(),
-                'price' => fake()->randomFloat(2, 0, 100),
-                'description' => fake()->realText(600),
-                'stock' => fake()->numberBetween(0, 100),
-                'available' => fake()->boolean(50),
-                'published' => fake()->dateTimeThisCentury(),
-            ])
-            ->create();
+            ->make();
 
         $updateBookCover = UploadedFile::fake()->image('update_book_cover.jpg');
 
         $this->edit
             ->fillForm([
                 'title' => $updatedBookData->title,
-                'publisher_id' => $updatedBookData->publisher_id,
-                'author_id' => $updatedBookData->author_id,
-                'genre_id' => $updatedBookData->genre_id,
+                'publisher_id' => $updatedBookData->publisher->getKey(),
+                'author_id' => $updatedBookData->author->getKey(),
+                'genre_id' => $updatedBookData->genre->getKey(),
+                'isbn' => $updatedBookData->isbn,
                 'price' => $updatedBookData->price,
                 'description' => $updatedBookData->description,
                 'stock' => $updatedBookData->stock,
@@ -205,7 +213,6 @@ describe('Book Edit Page', function () {
                 'published' => $updatedBookData->published,
                 'cover_image' => $updateBookCover,
             ])
-            ->set('isbn', $updatedBookData->isbn)
             ->call('save')
             ->assertHasNoFormErrors();
 
@@ -213,9 +220,9 @@ describe('Book Edit Page', function () {
 
         expect($updatedBook)
             ->title->toBe($updatedBook->title)
-            ->publisher_id->toBe($updatedBook->publisher_id)
-            ->author_id->toBe($updatedBook->author_id)
-            ->genre_id->toBe($updatedBook->genre_id)
+            ->publisher_id->toBe($updatedBook->publisher->getKey())
+            ->author_id->toBe($updatedBook->author->getKey())
+            ->genre_id->toBe($updatedBook->genre->getKey())
             ->isbn->toBe($updatedBook->isbn)
             ->price->toBe($updatedBook->price)
             ->description->toBe($updatedBook->description)
@@ -227,9 +234,10 @@ describe('Book Edit Page', function () {
 
         assertDatabaseHas('books', [
             'title' => $updatedBook->title,
-            'publisher_id' => $updatedBook->publisher_id,
-            'author_id' => $updatedBook->author_id,
-            'genre_id' => $updatedBook->genre_id,
+            'publisher_id' => $updatedBook->publisher->getKey(),
+            'author_id' => $updatedBook->author->getKey(),
+            'genre_id' => $updatedBook->genre->getKey(),
+            'isbn' => $updatedBook->isbn,
             'price' => $updatedBook->price,
             'description' => $updatedBook->description,
             'stock' => $updatedBook->stock,
@@ -252,8 +260,8 @@ describe('Book Edit Page', function () {
                 'publisher_id' => $updateBook->publisher_id,
                 'author_id' => $updateBook->author_id,
                 'genre_id' => $updateBook->genre_id,
-                'price' => $updateBook->price,
                 'isbn' => $updateBook->isbn,
+                'price' => $updateBook->price,
                 'stock' => $updateBook->stock,
                 'published' => $updateBook->published,
             ])
@@ -269,4 +277,11 @@ describe('Book Edit Page', function () {
         [fn () => Book::factory()->state(['stock' => null])->make(), 'Missing Stock'],
         [fn () => Book::factory()->state(['published' => null])->make(), 'Missing Published Date'],
     ]);
+
+    it('can not delete a book', function () {
+        $this->book;
+
+        $this->edit
+            ->assertActionHidden(DeleteAction::class);
+    });
 });

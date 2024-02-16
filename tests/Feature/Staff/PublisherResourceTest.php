@@ -4,6 +4,7 @@ use App\Filament\Staff\Resources\PublisherResource\Pages\CreatePublisher;
 use App\Filament\Staff\Resources\PublisherResource\Pages\EditPublisher;
 use App\Filament\Staff\Resources\PublisherResource\Pages\ListPublishers;
 use App\Models\Publisher;
+use Filament\Actions\DeleteAction;
 use Illuminate\Http\UploadedFile;
 
 use function Pest\Laravel\assertDatabaseHas;
@@ -53,7 +54,7 @@ describe('Publisher List Page', function () {
             ->assertTableColumnStateSet('founded', $publisher->founded, record: $publisher);
     });
 
-    it('can create a publisher but cannot delete it', function () {
+    it('can create a publisher but can not delete it', function () {
         $this->list
             ->assertActionEnabled('create')
             ->assertTableActionDisabled('delete', $this->publisher);
@@ -133,11 +134,7 @@ describe('Publisher Edit Page', function () {
         $publisher = $this->publisher;
 
         $updatePublisherData = Publisher::factory()
-            ->state([
-                'name' => fake()->name(),
-                'founded' => fake()->dateTimeThisCentury(),
-            ])
-            ->create();
+            ->make();
 
         $updateLogoPath = UploadedFile::fake()->image('update_logo.jpg');
 
@@ -183,4 +180,11 @@ describe('Publisher Edit Page', function () {
         [fn () => Publisher::factory()->state(['name' => null])->make(), 'Missing Name'],
         [fn () => Publisher::factory()->state(['founded' => null])->make(), 'Missing Founded'],
     ]);
+
+    it('can not delete a publisher', function () {
+        $this->publisher;
+
+        $this->edit
+            ->assertActionHidden(DeleteAction::class);
+    });
 });

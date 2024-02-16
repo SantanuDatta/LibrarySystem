@@ -68,20 +68,25 @@ class TransactionResource extends Resource
                                             ->native(false)
                                             ->searchable()
                                             ->preload()
-                                            ->label('Borrower'),
+                                            ->label('Borrower')
+                                            ->required(),
                                         Select::make('book_id')
                                             ->options(fn () => Book::whereAvailable(true)
                                                 ->pluck('title', 'id'))
                                             ->native(false)
                                             ->searchable()
                                             ->preload()
-                                            ->label('Book'),
+                                            ->label('Book')
+                                            ->required(),
                                         DatePicker::make('borrowed_date')
                                             ->live(),
                                         TextInput::make('borrowed_for')
                                             ->suffix('Days')
                                             ->numeric()
-                                            ->live(),
+                                            ->live()
+                                            ->minValue(0)
+                                            ->maxValue(30)
+                                            ->required(),
                                         DatePicker::make('returned_date')
                                             ->visible(fn (Get $get): bool => $get('status') === 'returned'
                                                 || $get('status') === 'delayed')
@@ -141,8 +146,10 @@ class TransactionResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('user.name')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('book.title')
+                    ->sortable()
                     ->searchable()
                     ->label('Borrowed Book'),
                 TextColumn::make('borrowed_date')
