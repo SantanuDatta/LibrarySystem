@@ -9,7 +9,6 @@ use App\Models\Genre;
 use Filament\Actions\DeleteAction;
 
 use function Pest\Laravel\assertDatabaseHas;
-use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Livewire\livewire;
 
 beforeEach(function () {
@@ -89,16 +88,16 @@ describe('Genre Create Page', function () {
         ]);
     });
 
-    it('can validate form data on create', function (Genre $newGenre) {
+    it('can validate form data on create', function () {
         $this->create
+            ->fillForm([
+                'name' => null,
+            ])
             ->call('create')
-            ->assertHasFormErrors();
-        assertDatabaseMissing('genres', [
-            'name' => $newGenre->name,
-        ]);
-    })->with([
-        [fn () => Genre::factory()->state(['name' => null])->make(), 'Missing Name'],
-    ]);
+            ->assertHasFormErrors([
+                'name' => 'required',
+            ]);
+    });
 });
 
 describe('Genre Edit Page', function () {
@@ -141,16 +140,19 @@ describe('Genre Edit Page', function () {
         ]);
     });
 
-    it('can validate form data on update', function (Genre $updatedGenre) {
+    it('can validate form data on update', function () {
+        Genre::factory()
+            ->create();
+
         $this->edit
             ->fillForm([
-                'name' => $updatedGenre->name,
+                'name' => null,
             ])
             ->call('save')
-            ->assertHasFormErrors();
-    })->with([
-        [fn () => Genre::factory()->state(['name' => null])->make(), 'Missing Name'],
-    ]);
+            ->assertHasFormErrors([
+                'name' => 'required',
+            ]);
+    });
 
     it('can render a relation manager with books', function () {
         $author = Genre::factory()
@@ -163,7 +165,7 @@ describe('Genre Edit Page', function () {
         ])->assertSuccessful();
     });
 
-    it('can not delete a genre', function () {
+    it('can not delete a genre from the edit page', function () {
         $this->genre;
 
         $this->edit

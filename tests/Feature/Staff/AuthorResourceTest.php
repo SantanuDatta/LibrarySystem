@@ -11,7 +11,6 @@ use Filament\Actions\DeleteAction;
 use Illuminate\Http\UploadedFile;
 
 use function Pest\Laravel\assertDatabaseHas;
-use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Livewire\livewire;
 use function PHPUnit\Framework\assertTrue;
 
@@ -115,21 +114,20 @@ describe('Author Create Page', function () {
         ]);
     });
 
-    it('can validate form data on create', function (Author $newAuthor) {
+    it('can validate form data on create', function () {
         $this->create
+            ->fillForm([
+                'name' => null,
+                'publisher_id' => null,
+                'date_of_birth' => null,
+            ])
             ->call('create')
-            ->assertHasFormErrors();
-
-        assertDatabaseMissing('authors', [
-            'name' => $newAuthor->name,
-            'publisher_id' => $newAuthor->publisher_id,
-            'date_of_birth' => $newAuthor->date_of_birth,
-        ]);
-    })->with([
-        [fn () => Author::factory()->state(['name' => null])->make(), 'Missing Name'],
-        [fn () => Author::factory()->state(['publisher_id' => null])->make(), 'Missing Publisher'],
-        [fn () => Author::factory()->state(['date_of_birth' => null])->make(), 'Missing Date of Birth'],
-    ]);
+            ->assertHasFormErrors([
+                'name' => 'required',
+                'publisher_id' => 'required',
+                'date_of_birth' => 'required',
+            ]);
+    });
 });
 
 describe('Author Edit Page', function () {
@@ -191,21 +189,23 @@ describe('Author Edit Page', function () {
 
     });
 
-    it('can validate form data on edit', function (Author $updatedAuthor) {
+    it('can validate form data on edit', function () {
+        Author::factory()
+            ->has(Publisher::factory(), relationship: 'publisher')
+            ->create();
         $this->edit
             ->fillForm([
-                'name' => $updatedAuthor->name,
-                'publisher_id' => $updatedAuthor->publisher_id,
-                'date_of_birth' => $updatedAuthor->date_of_birth,
-                'bio' => $updatedAuthor->bio,
+                'name' => null,
+                'publisher_id' => null,
+                'date_of_birth' => null,
             ])
             ->call('save')
-            ->assertHasFormErrors();
-    })->with([
-        [fn () => Author::factory()->state(['name' => null])->make(), 'Missing Name'],
-        [fn () => Author::factory()->state(['publisher_id' => null])->make(), 'Missing Publisher'],
-        [fn () => Author::factory()->state(['date_of_birth' => null])->make(), 'Missing Date of Birth'],
-    ]);
+            ->assertHasFormErrors([
+                'name' => 'required',
+                'publisher_id' => 'required',
+                'date_of_birth' => 'required',
+            ]);
+    });
 
     it('can render a relation manager with books', function () {
         $author = Author::factory()
@@ -219,7 +219,7 @@ describe('Author Edit Page', function () {
         ])->assertSuccessful();
     });
 
-    it('can not delete an author', function () {
+    it('can not delete an author from the edit page', function () {
         $this->author;
 
         $this->edit

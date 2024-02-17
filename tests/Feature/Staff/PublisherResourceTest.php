@@ -103,18 +103,18 @@ describe('Publisher Create Page', function () {
         ]);
     });
 
-    it('can validate form data on create', function (Publisher $newPublisher) {
+    it('can validate form data on create', function () {
         $this->create
+            ->fillForm([
+                'name' => null,
+                'founded' => null,
+            ])
             ->call('create')
-            ->assertHasFormErrors();
-        assertDatabaseMissing('publishers', [
-            'name' => $newPublisher->name,
-            'founded' => $newPublisher->founded,
-        ]);
-    })->with([
-        [fn () => Publisher::factory()->state(['name' => null])->make(), 'Missing Name'],
-        [fn () => Publisher::factory()->state(['founded' => null])->make(), 'Missing Founded'],
-    ]);
+            ->assertHasFormErrors([
+                'name' => 'required',
+                'founded' => 'required',
+            ]);
+    });
 });
 
 describe('Publisher Edit Page', function () {
@@ -168,20 +168,22 @@ describe('Publisher Edit Page', function () {
         ]);
     });
 
-    it('can validate form data on edit', function (Publisher $updatedPublisher) {
+    it('can validate form data on edit', function () {
+        Publisher::factory()
+            ->create();
         $this->edit
             ->fillForm([
-                'name' => $updatedPublisher->name,
-                'founded' => $updatedPublisher->founded,
+                'name' => null,
+                'founded' => null,
             ])
             ->call('save')
-            ->assertHasFormErrors();
-    })->with([
-        [fn () => Publisher::factory()->state(['name' => null])->make(), 'Missing Name'],
-        [fn () => Publisher::factory()->state(['founded' => null])->make(), 'Missing Founded'],
-    ]);
+            ->assertHasFormErrors([
+                'name' => 'required',
+                'founded' => 'required',
+            ]);
+    });
 
-    it('can not delete a publisher', function () {
+    it('can not delete a publisher from the edit page', function () {
         $this->publisher;
 
         $this->edit

@@ -79,7 +79,8 @@ class TransactionResource extends Resource
                                             ->label('Book')
                                             ->required(),
                                         DatePicker::make('borrowed_date')
-                                            ->live(),
+                                            ->live()
+                                            ->required(),
                                         TextInput::make('borrowed_for')
                                             ->suffix('Days')
                                             ->numeric()

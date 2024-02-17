@@ -11,7 +11,6 @@ use Filament\Actions\DeleteAction;
 use Illuminate\Http\UploadedFile;
 
 use function Pest\Laravel\assertDatabaseHas;
-use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Livewire\livewire;
 use function PHPUnit\Framework\assertTrue;
 
@@ -130,31 +129,30 @@ describe('Book Create Page', function () {
         ]);
     });
 
-    it('can validate form data on create', function (Book $newBook) {
+    it('can validate form data on create', function () {
         $this->create
+            ->fillForm([
+                'title' => null,
+                'publisher_id' => null,
+                'author_id' => null,
+                'genre_id' => null,
+                'isbn' => null,
+                'price' => null,
+                'stock' => null,
+                'published' => null,
+            ])
             ->call('create')
-            ->assertHasFormErrors();
-
-        assertDatabaseMissing('books', [
-            'title' => $newBook->title,
-            'publisher_id' => $newBook->publisher_id,
-            'author_id' => $newBook->author_id,
-            'genre_id' => $newBook->genre_id,
-            'isbn' => $newBook->isbn,
-            'price' => $newBook->price,
-            'stock' => $newBook->stock,
-            'published' => $newBook->published,
-        ]);
-    })->with([
-        [fn () => Book::factory()->state(['title' => null])->make(), 'Missing Title'],
-        [fn () => Book::factory()->state(['publisher_id' => null])->make(), 'Missing Publisher'],
-        [fn () => Book::factory()->state(['author_id' => null])->make(), 'Missing Author'],
-        [fn () => Book::factory()->state(['genre_id' => null])->make(), 'Missing Genre'],
-        [fn () => Book::factory()->state(['isbn' => null])->make(), 'Missing ISBN'],
-        [fn () => Book::factory()->state(['price' => null])->make(), 'Missing Price'],
-        [fn () => Book::factory()->state(['stock' => null])->make(), 'Missing Stock'],
-        [fn () => Book::factory()->state(['published' => null])->make(), 'Missing Published Date'],
-    ]);
+            ->assertHasFormErrors([
+                'title' => 'required',
+                'publisher_id' => 'required',
+                'author_id' => 'required',
+                'genre_id' => 'required',
+                'isbn' => 'required',
+                'price' => 'required',
+                'stock' => 'required',
+                'published' => 'required',
+            ]);
+    });
 });
 
 describe('Book Edit Page', function () {
@@ -253,32 +251,38 @@ describe('Book Edit Page', function () {
         ]);
     });
 
-    it('can validate form data on edit', function (Book $updateBook) {
+    it('can validate form data on edit', function () {
+        Book::factory()
+            ->has(Author::factory(), relationship: 'author')
+            ->has(Publisher::factory(), relationship: 'publisher')
+            ->has(Genre::factory(), relationship: 'genre')
+            ->create();
+
         $this->edit
             ->fillForm([
-                'title' => $updateBook->title,
-                'publisher_id' => $updateBook->publisher_id,
-                'author_id' => $updateBook->author_id,
-                'genre_id' => $updateBook->genre_id,
-                'isbn' => $updateBook->isbn,
-                'price' => $updateBook->price,
-                'stock' => $updateBook->stock,
-                'published' => $updateBook->published,
+                'title' => null,
+                'publisher_id' => null,
+                'author_id' => null,
+                'genre_id' => null,
+                'isbn' => null,
+                'price' => null,
+                'stock' => null,
+                'published' => null,
             ])
             ->call('save')
-            ->assertHasFormErrors();
-    })->with([
-        [fn () => Book::factory()->state(['title' => null])->make(), 'Missing Title'],
-        [fn () => Book::factory()->state(['publisher_id' => null])->make(), 'Missing Publisher'],
-        [fn () => Book::factory()->state(['author_id' => null])->make(), 'Missing Author'],
-        [fn () => Book::factory()->state(['genre_id' => null])->make(), 'Missing Genre'],
-        [fn () => Book::factory()->state(['isbn' => null])->make(), 'Missing ISBN'],
-        [fn () => Book::factory()->state(['price' => null])->make(), 'Missing Price'],
-        [fn () => Book::factory()->state(['stock' => null])->make(), 'Missing Stock'],
-        [fn () => Book::factory()->state(['published' => null])->make(), 'Missing Published Date'],
-    ]);
+            ->assertHasFormErrors([
+                'title' => 'required',
+                'publisher_id' => 'required',
+                'author_id' => 'required',
+                'genre_id' => 'required',
+                'isbn' => 'required',
+                'price' => 'required',
+                'stock' => 'required',
+                'published' => 'required',
+            ]);
+    });
 
-    it('can not delete a book', function () {
+    it('can not delete a book from the edit page', function () {
         $this->book;
 
         $this->edit

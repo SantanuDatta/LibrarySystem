@@ -2,6 +2,7 @@
 
 use App\Enums\BorrowedStatus;
 use App\Filament\Staff\Resources\TransactionResource\Pages\CreateTransaction;
+use App\Filament\Staff\Resources\TransactionResource\Pages\EditTransaction;
 use App\Filament\Staff\Resources\TransactionResource\Pages\ListTransactions;
 use App\Models\Book;
 use App\Models\Role;
@@ -9,7 +10,6 @@ use App\Models\Transaction;
 use App\Models\User;
 
 use function Pest\Laravel\assertDatabaseHas;
-use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Livewire\livewire;
 
 beforeEach(function () {
@@ -90,8 +90,8 @@ describe('Transaction List Page', function () {
 describe('Transaction Create Page', function () {
     beforeEach(function () {
         $this->create = livewire(CreateTransaction::class, [
-            'panel' => 'staff',
             'record' => $this->transaction,
+            'panel' => 'staff',
         ]);
     });
 
@@ -107,6 +107,8 @@ describe('Transaction Create Page', function () {
             ]))
             ->for($this->user)
             ->state([
+                'borrowed_date' => now()->subDays(10),
+                'borrowed_for' => 10,
                 'status' => BorrowedStatus::Borrowed,
             ])
             ->make();
@@ -120,6 +122,7 @@ describe('Transaction Create Page', function () {
                 'status' => $newTransaction->status->value,
             ])
             ->call('create')
+            ->assertFormFieldIsHidden('returned_date')
             ->assertHasNoFormErrors();
 
         assertDatabaseHas('transactions', [
@@ -131,24 +134,144 @@ describe('Transaction Create Page', function () {
         ]);
     });
 
-    //Work In Progress Doesn't Work
-    it('can validate form data on create', function ($newTransaction = null) {
-        $newTransaction = $newTransaction ? $newTransaction() : $this->transaction;
-
+    it('can validate form data on create', function () {
         $this->create
+            ->fillForm([
+                'book_id' => null,
+                'user_id' => null,
+                'borrowed_date' => null,
+                'borrowed_for' => null,
+            ])
             ->call('create')
-            ->assertHasFormErrors();
+            ->assertFormFieldIsHidden('returned_date')
+            ->assertHasFormErrors([
+                'book_id' => 'required',
+                'user_id' => 'required',
+                'borrowed_date' => 'required',
+                'borrowed_for' => 'required',
+            ]);
+    });
+});
 
-        assertDatabaseMissing('transactions', [
-            'user_id' => $newTransaction->user_id,
-            'book_id' => $newTransaction->book_id,
-            'borrowed_date' => $newTransaction->borrowed_date,
-            'borrowed_for' => $newTransaction->borrowed_for,
+describe('Transaction Edit Page', function () {
+    beforeEach(function () {
+        $this->edit = livewire(EditTransaction::class, [
+            'record' => $this->transaction->getRouteKey(),
+            'panel' => 'staff',
         ]);
-    })->with([
-        [fn () => Transaction::factory()->state(['user_id' => null])->make(), 'Missing Borrower'],
-        [fn () => Transaction::factory()->state(['book_id' => null])->make(), 'Missing Book'],
-        [fn () => Transaction::factory()->state(['borrowed_date' => null])->make(), 'Missing Borrowed Date'],
-        [fn () => Transaction::factory()->state(['borrowed_for' => null])->make(), 'Missing Borrowed For'],
-    ]);
+    });
+
+    it('can render the edit page', function () {
+        $this->edit
+            ->assertSuccessful();
+    });
+
+    it('can retrieve data', function () {
+        $transaction = $this->transaction;
+
+        $this->edit
+            ->assertFormSet([
+                'book_id' => $transaction->book->getKey(),
+                'user_id' => $transaction->user->getKey(),
+                'borrowed_date' => $transaction->borrowed_date->format('Y-m-d'),
+                'borrowed_for' => $transaction->borrowed_for,
+                'status' => $transaction->status->value,
+            ]);
+    });
+
+    //Brainstorming need more time to think
+    it('can update the transaction when it is returned', function () {
+        $transaction = $this->transaction;
+
+        $updatedTransactionData = Transaction::factory()
+            ->for(Book::factory([
+                'available' => true,
+            ]))
+            ->for($this->user)
+            ->state([
+                'borrowed_date' => now()->subDays(10),
+                'borrowed_for' => 10,
+                'status' => BorrowedStatus::Returned,
+            ])
+            ->make();
+
+        $this->edit
+            ->fillForm([
+                'book_id' => $updatedTransactionData->book->getKey(),
+                'user_id' => $updatedTransactionData->user->getKey(),
+                'borrowed_date' => $updatedTransactionData->borrowed_date,
+                'borrowed_for' => $updatedTransactionData->borrowed_for,
+                'status' => $updatedTransactionData->status,
+                'returned_date' => $updatedTransactionData->returned_date,
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $updatedTransaction = $transaction->refresh();
+
+        expect($updatedTransaction)
+            ->user_id->toBe($updatedTransaction->user->getKey())
+            ->book_id->toBe($updatedTransaction->book->getKey())
+            ->borrowed_date->format('Y-m-d')->toBe($updatedTransaction->borrowed_date->format('Y-m-d'))
+            ->borrowed_for->toBe($updatedTransaction->borrowed_for)
+            ->status->toBe($updatedTransaction->status)
+            ->returned_date->format('Y-m-d')->toBe($updatedTransaction->returned_date->format('Y-m-d'));
+
+        assertDatabaseHas('transactions', [
+            'book_id' => $updatedTransaction->book->getKey(),
+            'user_id' => $updatedTransaction->user->getKey(),
+            'borrowed_date' => $updatedTransaction->borrowed_date,
+            'borrowed_for' => $updatedTransaction->borrowed_for,
+            'status' => $updatedTransaction->status,
+        ]);
+    });
+
+    //Brainstorming need more time to think
+    it('can update the transaction when it is delayed', function () {
+        $transaction = $this->transaction;
+
+        $updatedTransactionData = Transaction::factory()
+            ->for(Book::factory([
+                'available' => true,
+            ]))
+            ->for($this->user)
+            ->state([
+                'borrowed_date' => now()->subDays(20),
+                'borrowed_for' => 10,
+                'status' => BorrowedStatus::Delayed,
+            ])
+            ->make();
+
+        $this->edit
+            ->fillForm([
+                'book_id' => $updatedTransactionData->book->getKey(),
+                'user_id' => $updatedTransactionData->user->getKey(),
+                'borrowed_date' => $updatedTransactionData->borrowed_date,
+                'borrowed_for' => $updatedTransactionData->borrowed_for,
+                'status' => $updatedTransactionData->status,
+                'returned_date' => $updatedTransactionData->returned_date,
+
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $updatedTransaction = $transaction->refresh();
+
+        expect($updatedTransaction)
+            ->user_id->toBe($updatedTransaction->user->getKey())
+            ->book_id->toBe($updatedTransaction->book->getKey())
+            ->borrowed_date->format('Y-m-d')->toBe($updatedTransaction->borrowed_date->format('Y-m-d'))
+            ->borrowed_for->toBe($updatedTransaction->borrowed_for)
+            ->status->toBe($updatedTransaction->status)
+            ->returned_date->format('Y-m-d')->toBe($updatedTransaction->returned_date->format('Y-m-d'));
+
+        assertDatabaseHas('transactions', [
+            'book_id' => $updatedTransaction->book->getKey(),
+            'user_id' => $updatedTransaction->user->getKey(),
+            'borrowed_date' => $updatedTransaction->borrowed_date,
+            'borrowed_for' => $updatedTransaction->borrowed_for,
+            'status' => $updatedTransaction->status,
+        ]);
+    });
+
 });

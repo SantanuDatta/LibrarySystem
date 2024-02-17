@@ -6,6 +6,7 @@ use App\Enums\BorrowedStatus;
 use App\Models\Book;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Carbon;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Transaction>
@@ -22,9 +23,11 @@ class TransactionFactory extends Factory
         return [
             'book_id' => Book::factory(),
             'user_id' => User::factory(),
-            'borrowed_date' => fake()->dateTimeThisYear(),
+            'borrowed_date' => now()->subDays(fake()->numberBetween(1, 30)),
             'borrowed_for' => fake()->numberBetween(1, 30),
-            'returned_date' => fake()->dateTimeThisYear(),
+            'returned_date' => function (array $attributes) {
+                return Carbon::parse($attributes['borrowed_date'])->addDays($attributes['borrowed_for']);
+            },
             'status' => BorrowedStatus::randomValue(),
             'fine' => fake()->numberBetween(0, 1000),
         ];
