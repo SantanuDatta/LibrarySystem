@@ -138,7 +138,6 @@ class TransactionResource extends Resource
                                     ]),
                             ])->columnSpan(['sm' => 2, 'md' => 1, 'xxl' => 1]),
                     ]),
-
             ]);
     }
 

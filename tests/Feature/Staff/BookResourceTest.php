@@ -7,6 +7,7 @@ use App\Models\Author;
 use App\Models\Book;
 use App\Models\Genre;
 use App\Models\Publisher;
+use App\Models\Role;
 use Filament\Actions\DeleteAction;
 use Illuminate\Http\UploadedFile;
 
@@ -15,7 +16,7 @@ use function Pest\Livewire\livewire;
 use function PHPUnit\Framework\assertTrue;
 
 beforeEach(function () {
-    asStaff();
+    asRole(Role::IS_STAFF);
     $this->book = Book::factory()
         ->has(Author::factory(), relationship: 'author')
         ->has(Publisher::factory(), relationship: 'publisher')

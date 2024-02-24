@@ -13,7 +13,7 @@ use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 
 beforeEach(function () {
-    asStaff();
+    asRole(Role::IS_STAFF);
     $this->user = User::factory([
         'role_id' => Role::IS_BORROWER,
         'status' => true,
@@ -107,31 +107,25 @@ describe('Transaction Create Page', function () {
             ]))
             ->for($this->user)
             ->state([
-                'borrowed_date' => now()->subDays(10),
-                'borrowed_for' => 10,
                 'status' => BorrowedStatus::Borrowed,
             ])
             ->make();
 
-        $this->create
-            ->fillForm([
-                'book_id' => $newTransaction->book->getKey(),
-                'user_id' => $newTransaction->user->getKey(),
-                'borrowed_date' => $newTransaction->borrowed_date,
-                'borrowed_for' => $newTransaction->borrowed_for,
-                'status' => $newTransaction->status->value,
-            ])
-            ->call('create')
-            ->assertFormFieldIsHidden('returned_date')
-            ->assertHasNoFormErrors();
-
-        assertDatabaseHas('transactions', [
+        $transaction = [
             'book_id' => $newTransaction->book->getKey(),
             'user_id' => $newTransaction->user->getKey(),
             'borrowed_date' => $newTransaction->borrowed_date,
             'borrowed_for' => $newTransaction->borrowed_for,
             'status' => $newTransaction->status->value,
-        ]);
+        ];
+
+        $this->create
+            ->fillForm($transaction)
+            ->call('create')
+            ->assertFormFieldIsHidden('returned_date')
+            ->assertHasNoFormErrors();
+
+        assertDatabaseHas('transactions', $transaction);
     });
 
     it('can validate form data on create', function () {
@@ -179,99 +173,82 @@ describe('Transaction Edit Page', function () {
             ]);
     });
 
-    //Brainstorming need more time to think
     it('can update the transaction when it is returned', function () {
-        $transaction = $this->transaction;
-
-        $updatedTransactionData = Transaction::factory()
+        $transaction = Transaction::factory()
             ->for(Book::factory([
                 'available' => true,
             ]))
             ->for($this->user)
-            ->state([
-                'borrowed_date' => now()->subDays(10),
-                'borrowed_for' => 10,
-                'status' => BorrowedStatus::Returned,
-            ])
-            ->make();
+            ->create();
+
+        $updatedTransactionData = [
+            'book_id' => $transaction->book->getKey(),
+            'user_id' => $transaction->user->getKey(),
+            'borrowed_date' => now(),
+            'borrowed_for' => 10,
+            'status' => BorrowedStatus::Returned,
+            'returned_date' => now()->addDays(5),
+        ];
+
+        $transaction->update($updatedTransactionData);
 
         $this->edit
-            ->fillForm([
-                'book_id' => $updatedTransactionData->book->getKey(),
-                'user_id' => $updatedTransactionData->user->getKey(),
-                'borrowed_date' => $updatedTransactionData->borrowed_date,
-                'borrowed_for' => $updatedTransactionData->borrowed_for,
-                'status' => $updatedTransactionData->status,
-                'returned_date' => $updatedTransactionData->returned_date,
-            ])
+            ->fillForm($updatedTransactionData)
             ->call('save')
             ->assertHasNoFormErrors();
 
         $updatedTransaction = $transaction->refresh();
 
         expect($updatedTransaction)
-            ->user_id->toBe($updatedTransaction->user->getKey())
-            ->book_id->toBe($updatedTransaction->book->getKey())
-            ->borrowed_date->format('Y-m-d')->toBe($updatedTransaction->borrowed_date->format('Y-m-d'))
-            ->borrowed_for->toBe($updatedTransaction->borrowed_for)
-            ->status->toBe($updatedTransaction->status)
-            ->returned_date->format('Y-m-d')->toBe($updatedTransaction->returned_date->format('Y-m-d'));
+            ->user_id->toBe($updatedTransactionData['user_id'])
+            ->book_id->toBe($updatedTransactionData['book_id'])
+            ->borrowed_date->format('Y-m-d')->toBe($updatedTransactionData['borrowed_date']->format('Y-m-d'))
+            ->borrowed_for->toBe($updatedTransactionData['borrowed_for'])
+            ->status->toBe($updatedTransactionData['status'])
+            ->returned_date->format('Y-m-d')->toBe($updatedTransactionData['returned_date']->format('Y-m-d'));
 
-        assertDatabaseHas('transactions', [
-            'book_id' => $updatedTransaction->book->getKey(),
-            'user_id' => $updatedTransaction->user->getKey(),
-            'borrowed_date' => $updatedTransaction->borrowed_date,
-            'borrowed_for' => $updatedTransaction->borrowed_for,
-            'status' => $updatedTransaction->status,
-        ]);
+        assertDatabaseHas('transactions', $updatedTransactionData);
     });
 
-    //Brainstorming need more time to think
-    it('can update the transaction when it is delayed', function () {
-        $transaction = $this->transaction;
-
-        $updatedTransactionData = Transaction::factory()
+    it('can update the transaction when it is delayed and fine is applied', function () {
+        $transaction = Transaction::factory()
             ->for(Book::factory([
                 'available' => true,
             ]))
             ->for($this->user)
-            ->state([
-                'borrowed_date' => now()->subDays(20),
-                'borrowed_for' => 10,
-                'status' => BorrowedStatus::Delayed,
-            ])
-            ->make();
+            ->create();
+
+        $updatedTransactionData = [
+            'book_id' => $transaction->book->getKey(),
+            'user_id' => $transaction->user->getKey(),
+            'borrowed_date' => now(),
+            'borrowed_for' => 10,
+            'status' => BorrowedStatus::Delayed,
+            'returned_date' => now()->addDays(15),
+        ];
+
+        $fine = ($updatedTransactionData['returned_date']->diffInDays($updatedTransactionData['borrowed_date']) - $updatedTransactionData['borrowed_for']) * 10;
+
+        $updatedTransactionData['fine'] = $fine;
+
+        $transaction->update($updatedTransactionData);
 
         $this->edit
-            ->fillForm([
-                'book_id' => $updatedTransactionData->book->getKey(),
-                'user_id' => $updatedTransactionData->user->getKey(),
-                'borrowed_date' => $updatedTransactionData->borrowed_date,
-                'borrowed_for' => $updatedTransactionData->borrowed_for,
-                'status' => $updatedTransactionData->status,
-                'returned_date' => $updatedTransactionData->returned_date,
-
-            ])
+            ->fillForm($updatedTransactionData)
             ->call('save')
             ->assertHasNoFormErrors();
 
         $updatedTransaction = $transaction->refresh();
 
         expect($updatedTransaction)
-            ->user_id->toBe($updatedTransaction->user->getKey())
-            ->book_id->toBe($updatedTransaction->book->getKey())
-            ->borrowed_date->format('Y-m-d')->toBe($updatedTransaction->borrowed_date->format('Y-m-d'))
-            ->borrowed_for->toBe($updatedTransaction->borrowed_for)
-            ->status->toBe($updatedTransaction->status)
-            ->returned_date->format('Y-m-d')->toBe($updatedTransaction->returned_date->format('Y-m-d'));
+            ->user_id->toBe($updatedTransactionData['user_id'])
+            ->book_id->toBe($updatedTransactionData['book_id'])
+            ->borrowed_date->format('Y-m-d')->toBe($updatedTransactionData['borrowed_date']->format('Y-m-d'))
+            ->borrowed_for->toBe($updatedTransactionData['borrowed_for'])
+            ->status->toBe($updatedTransactionData['status'])
+            ->returned_date->format('Y-m-d')->toBe($updatedTransactionData['returned_date']->format('Y-m-d'))
+            ->fine->toBe($updatedTransactionData['fine']);
 
-        assertDatabaseHas('transactions', [
-            'book_id' => $updatedTransaction->book->getKey(),
-            'user_id' => $updatedTransaction->user->getKey(),
-            'borrowed_date' => $updatedTransaction->borrowed_date,
-            'borrowed_for' => $updatedTransaction->borrowed_for,
-            'status' => $updatedTransaction->status,
-        ]);
+        assertDatabaseHas('transactions', $updatedTransactionData);
     });
-
 });

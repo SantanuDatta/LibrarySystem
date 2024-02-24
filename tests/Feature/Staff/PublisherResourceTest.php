@@ -4,16 +4,16 @@ use App\Filament\Staff\Resources\PublisherResource\Pages\CreatePublisher;
 use App\Filament\Staff\Resources\PublisherResource\Pages\EditPublisher;
 use App\Filament\Staff\Resources\PublisherResource\Pages\ListPublishers;
 use App\Models\Publisher;
+use App\Models\Role;
 use Filament\Actions\DeleteAction;
 use Illuminate\Http\UploadedFile;
 
 use function Pest\Laravel\assertDatabaseHas;
-use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Livewire\livewire;
 use function PHPUnit\Framework\assertTrue;
 
 beforeEach(function () {
-    asStaff();
+    asRole(Role::IS_STAFF);
     $this->publisher = Publisher::factory()->create();
 });
 

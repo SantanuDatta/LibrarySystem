@@ -11,7 +11,6 @@
 |
 */
 
-use App\Models\Role;
 use App\Models\User;
 
 use function Pest\Laravel\seed;
@@ -50,15 +49,9 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function asAdmin()
+function asRole($role)
 {
-    $admin = User::where('role_id', Role::IS_ADMIN)->first();
+    $user = User::where('role_id', $role)->first();
 
-    return test()->actingAs($admin);
-}
-function asStaff()
-{
-    $staff = User::where('role_id', Role::IS_STAFF)->first();
-
-    return test()->actingAs($staff);
+    return test()->actingAs($user);
 }

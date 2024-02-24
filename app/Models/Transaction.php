@@ -29,7 +29,7 @@ class Transaction extends Model
     protected $casts = [
         'status' => BorrowedStatus::class,
         'borrowed_date' => 'date',
-        'returned_date' => 'date',
+        'returned_date' => 'datetime',
         'fine' => 'integer',
     ];
 

@@ -23,13 +23,36 @@ class TransactionFactory extends Factory
         return [
             'book_id' => Book::factory(),
             'user_id' => User::factory(),
-            'borrowed_date' => now()->subDays(fake()->numberBetween(1, 30)),
+            'borrowed_date' => now(),
             'borrowed_for' => fake()->numberBetween(1, 30),
             'returned_date' => function (array $attributes) {
-                return Carbon::parse($attributes['borrowed_date'])->addDays($attributes['borrowed_for']);
+                $isNull = fake()->boolean(30);
+
+                if ($isNull) {
+
+                    return null;
+                } elseif ($attributes['borrowed_for'] >= 1) {
+                    $borrowedDate = Carbon::parse($attributes['borrowed_date']);
+                    $borrowedFor = $attributes['borrowed_for'];
+
+                    $maxReturnDate = $borrowedDate->copy()->addDays($borrowedFor - 1);
+                    $returnedDate = Carbon::parse(fake()->dateTimeBetween($borrowedDate, $maxReturnDate));
+
+                    return $returnedDate;
+                }
             },
-            'status' => BorrowedStatus::randomValue(),
-            'fine' => fake()->numberBetween(0, 1000),
+            'status' => function (array $attributes) {
+                $returnedDate = $attributes['returned_date'];
+
+                if ($returnedDate === null) {
+                    return BorrowedStatus::Borrowed;
+                } elseif (Carbon::parse($returnedDate)->isPast()) {
+                    return BorrowedStatus::Delayed;
+                } else {
+                    return BorrowedStatus::Returned;
+                }
+            },
+            'fine' => null,
         ];
     }
 }

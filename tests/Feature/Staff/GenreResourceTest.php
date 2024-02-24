@@ -6,13 +6,14 @@ use App\Filament\Staff\Resources\GenreResource\Pages\ListGenres;
 use App\Filament\Staff\Resources\GenreResource\RelationManagers\BooksRelationManager;
 use App\Models\Book;
 use App\Models\Genre;
+use App\Models\Role;
 use Filament\Actions\DeleteAction;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 
 beforeEach(function () {
-    asStaff();
+    asRole(Role::IS_STAFF);
     $this->genre = Genre::factory()->create();
 });
 
