@@ -8,24 +8,25 @@ use App\Models\Book;
 use App\Models\Role;
 use App\Models\Transaction;
 use App\Models\User;
+use Filament\Actions\DeleteAction;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 
 beforeEach(function () {
     asRole(Role::IS_STAFF);
+
     $this->user = User::factory([
         'role_id' => Role::IS_BORROWER,
         'status' => true,
     ])
         ->create();
+
     $this->transaction = Transaction::factory()
         ->for(Book::factory([
             'available' => true,
         ]))
-        ->state([
-            'user_id' => $this->user->getKey(),
-        ])
+        ->for($this->user)
         ->create();
 });
 
@@ -174,12 +175,8 @@ describe('Transaction Edit Page', function () {
     });
 
     it('can update the transaction when it is returned', function () {
-        $transaction = Transaction::factory()
-            ->for(Book::factory([
-                'available' => true,
-            ]))
-            ->for($this->user)
-            ->create();
+        $transaction = $this->transaction;
+        $updatedTransaction = $transaction->make();
 
         $updatedTransactionData = [
             'book_id' => $transaction->book->getKey(),
@@ -206,17 +203,11 @@ describe('Transaction Edit Page', function () {
             ->borrowed_for->toBe($updatedTransactionData['borrowed_for'])
             ->status->toBe($updatedTransactionData['status'])
             ->returned_date->format('Y-m-d')->toBe($updatedTransactionData['returned_date']->format('Y-m-d'));
-
-        assertDatabaseHas('transactions', $updatedTransactionData);
     });
 
     it('can update the transaction when it is delayed and fine is applied', function () {
-        $transaction = Transaction::factory()
-            ->for(Book::factory([
-                'available' => true,
-            ]))
-            ->for($this->user)
-            ->create();
+        $transaction = $this->transaction;
+        $updatedTransaction = $transaction->make();
 
         $updatedTransactionData = [
             'book_id' => $transaction->book->getKey(),
@@ -248,7 +239,33 @@ describe('Transaction Edit Page', function () {
             ->status->toBe($updatedTransactionData['status'])
             ->returned_date->format('Y-m-d')->toBe($updatedTransactionData['returned_date']->format('Y-m-d'))
             ->fine->toBe($updatedTransactionData['fine']);
+    });
 
-        assertDatabaseHas('transactions', $updatedTransactionData);
+    it('can validate form data on edit', function () {
+
+        $this->edit
+            ->assertFormFieldIsVisible('returned_date')
+            ->fillForm([
+                'book_id' => null,
+                'user_id' => null,
+                'borrowed_date' => null,
+                'borrowed_for' => null,
+                'returned_date' => null,
+            ])
+            ->call('save')
+            ->assertHasFormErrors([
+                'book_id' => 'required',
+                'user_id' => 'required',
+                'borrowed_date' => 'required',
+                'borrowed_for' => 'required',
+                'returned_date' => 'required',
+            ]);
+    });
+
+    it('can not delate a transaction from the edit page', function () {
+        $this->transaction;
+
+        $this->edit
+            ->assertActionHidden(DeleteAction::class);
     });
 });

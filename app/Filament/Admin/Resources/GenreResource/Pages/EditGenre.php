@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\GenreResource\Pages;
 
 use App\Filament\Admin\Resources\GenreResource;
 use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditGenre extends EditRecord
@@ -18,6 +19,7 @@ class EditGenre extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            DeleteAction::make(),
             Action::make('reset')
                 ->outlined()
                 ->icon('heroicon-o-arrow-path')

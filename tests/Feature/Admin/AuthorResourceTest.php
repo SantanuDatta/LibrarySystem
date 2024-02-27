@@ -1,22 +1,24 @@
 <?php
 
-use App\Filament\Staff\Resources\AuthorResource\Pages\CreateAuthor;
-use App\Filament\Staff\Resources\AuthorResource\Pages\EditAuthor;
-use App\Filament\Staff\Resources\AuthorResource\Pages\ListAuthors;
-use App\Filament\Staff\Resources\AuthorResource\RelationManagers\BooksRelationManager;
+use App\Filament\Admin\Resources\AuthorResource\Pages\CreateAuthor;
+use App\Filament\Admin\Resources\AuthorResource\Pages\EditAuthor;
+use App\Filament\Admin\Resources\AuthorResource\Pages\ListAuthors;
+use App\Filament\Admin\Resources\AuthorResource\RelationManagers\BooksRelationManager;
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\Publisher;
 use App\Models\Role;
-use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteAction as FormDeleteAction;
+use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 use Illuminate\Http\UploadedFile;
 
 use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\assertModelMissing;
 use function Pest\Livewire\livewire;
 use function PHPUnit\Framework\assertTrue;
 
 beforeEach(function () {
-    asRole(Role::IS_STAFF);
+    asRole(Role::IS_ADMIN);
 
     $this->author = Author::factory()
         ->has(Publisher::factory())
@@ -27,7 +29,7 @@ describe('Author List Page', function () {
     beforeEach(function () {
         $this->list = livewire(ListAuthors::class, [
             'record' => $this->author,
-            'panel' => 'staff',
+            'panel' => 'admin',
         ]);
     });
 
@@ -62,16 +64,16 @@ describe('Author List Page', function () {
             ->assertTableColumnStateSet('date_of_birth', $author->date_of_birth, record: $author);
     });
 
-    it('can create a new author but can not delete an author', function () {
+    it('can delete an author', function () {
         $this->list
-            ->assertActionEnabled('create')
-            ->assertTableActionDisabled('delete', $this->author);
+            ->callTableAction(TableDeleteAction::class, $this->author);
+        assertModelMissing($this->author);
     });
 });
 
 describe('Author Create Page', function () {
     beforeEach(function () {
-        $this->create = livewire(CreateAuthor::class, ['panel' => 'staff']);
+        $this->create = livewire(CreateAuthor::class, ['panel' => 'admin']);
     });
 
     it('can render the create page', function () {
@@ -136,7 +138,7 @@ describe('Author Edit Page', function () {
     beforeEach(function () {
         $this->edit = livewire(EditAuthor::class, [
             'record' => $this->author->getRouteKey(),
-            'panel' => 'staff',
+            'panel' => 'admin',
         ]);
     });
 
@@ -214,10 +216,12 @@ describe('Author Edit Page', function () {
         ])->assertSuccessful();
     });
 
-    it('can not delete an author from the edit page', function () {
+    it('can delete an author from the edit page', function () {
         $this->author;
 
         $this->edit
-            ->assertActionHidden(DeleteAction::class);
+            ->callAction(FormDeleteAction::class);
+
+        assertModelMissing($this->author);
     });
 });

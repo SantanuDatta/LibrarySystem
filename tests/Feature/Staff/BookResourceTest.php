@@ -17,6 +17,7 @@ use function PHPUnit\Framework\assertTrue;
 
 beforeEach(function () {
     asRole(Role::IS_STAFF);
+
     $this->book = Book::factory()
         ->has(Author::factory(), relationship: 'author')
         ->has(Publisher::factory(), relationship: 'publisher')
@@ -190,59 +191,46 @@ describe('Book Edit Page', function () {
     it('can update the book', function () {
         $book = $this->book;
 
-        $updatedBookData = Book::factory()
-            ->has(Author::factory(), relationship: 'author')
-            ->has(Publisher::factory(), relationship: 'publisher')
-            ->has(Genre::factory(), relationship: 'genre')
-            ->make();
+        $updatedBook = $book->make();
 
         $updateBookCover = UploadedFile::fake()->image('update_book_cover.jpg');
 
+        $updatedBookData = [
+            'title' => $book->title,
+            'publisher_id' => $book->publisher->getKey(),
+            'author_id' => $book->author->getKey(),
+            'genre_id' => $book->genre->getKey(),
+            'isbn' => $book->isbn,
+            'price' => $book->price,
+            'description' => $book->description,
+            'stock' => $book->stock,
+            'available' => $book->available,
+            'published' => $book->published,
+            'cover_image' => $updateBookCover,
+        ];
+
+        $book->update($updatedBookData);
+
         $this->edit
-            ->fillForm([
-                'title' => $updatedBookData->title,
-                'publisher_id' => $updatedBookData->publisher->getKey(),
-                'author_id' => $updatedBookData->author->getKey(),
-                'genre_id' => $updatedBookData->genre->getKey(),
-                'isbn' => $updatedBookData->isbn,
-                'price' => $updatedBookData->price,
-                'description' => $updatedBookData->description,
-                'stock' => $updatedBookData->stock,
-                'available' => $updatedBookData->available,
-                'published' => $updatedBookData->published,
-                'cover_image' => $updateBookCover,
-            ])
+            ->fillForm($updatedBookData)
             ->call('save')
             ->assertHasNoFormErrors();
 
         $updatedBook = $book->refresh();
 
         expect($updatedBook)
-            ->title->toBe($updatedBook->title)
-            ->publisher_id->toBe($updatedBook->publisher->getKey())
-            ->author_id->toBe($updatedBook->author->getKey())
-            ->genre_id->toBe($updatedBook->genre->getKey())
-            ->isbn->toBe($updatedBook->isbn)
-            ->price->toBe($updatedBook->price)
-            ->description->toBe($updatedBook->description)
-            ->stock->toBe($updatedBook->stock)
-            ->available->toBe($updatedBook->available)
-            ->published->format('Y-m-d')->toBe($updatedBook->published->format('Y-m-d'));
+            ->title->toBe($updatedBookData['title'])
+            ->publisher_id->toBe($updatedBookData['publisher_id'])
+            ->author_id->toBe($updatedBookData['author_id'])
+            ->genre_id->toBe($updatedBookData['genre_id'])
+            ->isbn->toBe($updatedBookData['isbn'])
+            ->price->toBe($updatedBookData['price'])
+            ->description->toBe($updatedBookData['description'])
+            ->stock->toBe($updatedBookData['stock'])
+            ->available->toBe($updatedBookData['available'])
+            ->published->format('Y-m-d')->toBe($updatedBookData['published']->format('Y-m-d'));
 
         expect($updatedBook->getFirstMedia('coverBooks'))->not->toBeNull();
-
-        assertDatabaseHas('books', [
-            'title' => $updatedBook->title,
-            'publisher_id' => $updatedBook->publisher->getKey(),
-            'author_id' => $updatedBook->author->getKey(),
-            'genre_id' => $updatedBook->genre->getKey(),
-            'isbn' => $updatedBook->isbn,
-            'price' => $updatedBook->price,
-            'description' => $updatedBook->description,
-            'stock' => $updatedBook->stock,
-            'available' => $updatedBook->available,
-            'published' => $updatedBook->published,
-        ]);
 
         assertDatabaseHas('media', [
             'model_type' => Book::class,

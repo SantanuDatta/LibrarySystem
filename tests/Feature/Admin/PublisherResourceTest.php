@@ -1,19 +1,21 @@
 <?php
 
-use App\Filament\Staff\Resources\PublisherResource\Pages\CreatePublisher;
-use App\Filament\Staff\Resources\PublisherResource\Pages\EditPublisher;
-use App\Filament\Staff\Resources\PublisherResource\Pages\ListPublishers;
+use App\Filament\Admin\Resources\PublisherResource\Pages\CreatePublisher;
+use App\Filament\Admin\Resources\PublisherResource\Pages\EditPublisher;
+use App\Filament\Admin\Resources\PublisherResource\Pages\ListPublishers;
 use App\Models\Publisher;
 use App\Models\Role;
-use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteAction as FormDeleteAction;
+use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 use Illuminate\Http\UploadedFile;
 
 use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\assertModelMissing;
 use function Pest\Livewire\livewire;
 use function PHPUnit\Framework\assertTrue;
 
 beforeEach(function () {
-    asRole(Role::IS_STAFF);
+    asRole(Role::IS_ADMIN);
 
     $this->publisher = Publisher::factory()->create();
 });
@@ -22,7 +24,7 @@ describe('Publisher List Page', function () {
     beforeEach(function () {
         $this->list = livewire(ListPublishers::class, [
             'record' => $this->publisher,
-            'panel' => 'staff',
+            'panel' => 'admin',
         ]);
     });
 
@@ -55,17 +57,18 @@ describe('Publisher List Page', function () {
             ->assertTableColumnStateSet('founded', $publisher->founded, record: $publisher);
     });
 
-    it('can create a publisher but can not delete it', function () {
+    it('can delete a publisher', function () {
         $this->list
-            ->assertActionEnabled('create')
-            ->assertTableActionDisabled('delete', $this->publisher);
+            ->callTableAction(TableDeleteAction::class, $this->publisher);
+
+        assertModelMissing($this->publisher);
     });
 });
 
 describe('Publisher Create Page', function () {
     beforeEach(function () {
         $this->create = livewire(CreatePublisher::class, [
-            'panel' => 'staff',
+            'panel' => 'admin',
         ]);
     });
     it('can render the create page', function () {
@@ -184,10 +187,12 @@ describe('Publisher Edit Page', function () {
             ]);
     });
 
-    it('can not delete a publisher from the edit page', function () {
+    it('can delete a publisher from the edit page', function () {
         $this->publisher;
 
         $this->edit
-            ->assertActionHidden(DeleteAction::class);
+            ->callAction(FormDeleteAction::class);
+
+        assertModelMissing($this->publisher);
     });
 });

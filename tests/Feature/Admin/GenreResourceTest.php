@@ -1,19 +1,21 @@
 <?php
 
-use App\Filament\Staff\Resources\GenreResource\Pages\CreateGenre;
-use App\Filament\Staff\Resources\GenreResource\Pages\EditGenre;
-use App\Filament\Staff\Resources\GenreResource\Pages\ListGenres;
-use App\Filament\Staff\Resources\GenreResource\RelationManagers\BooksRelationManager;
+use App\Filament\Admin\Resources\GenreResource\Pages\CreateGenre;
+use App\Filament\Admin\Resources\GenreResource\Pages\EditGenre;
+use App\Filament\Admin\Resources\GenreResource\Pages\ListGenres;
+use App\Filament\Admin\Resources\GenreResource\RelationManagers\BooksRelationManager;
 use App\Models\Book;
 use App\Models\Genre;
 use App\Models\Role;
-use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteAction as FormDeleteAction;
+use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 
 use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\assertModelMissing;
 use function Pest\Livewire\livewire;
 
 beforeEach(function () {
-    asRole(Role::IS_STAFF);
+    asRole(Role::IS_ADMIN);
 
     $this->genre = Genre::factory()->create();
 });
@@ -22,7 +24,7 @@ describe('Genre List Page', function () {
     beforeEach(function () {
         $this->list = livewire(ListGenres::class, [
             'record' => $this->genre,
-            'panel' => 'staff',
+            'panel' => 'admin',
         ]);
     });
     it('can render the index', function () {
@@ -54,17 +56,17 @@ describe('Genre List Page', function () {
             ->assertTableColumnStateSet('text_color', $genre->text_color, record: $genre);
     });
 
-    it('can create a genre but can not delete it', function () {
+    it('can delete a genre', function () {
         $this->list
-            ->assertActionEnabled('create')
-            ->assertTableActionDisabled('delete', $this->genre);
+            ->callTableAction(TableDeleteAction::class, $this->genre);
+        assertModelMissing($this->genre);
     });
 });
 
 describe('Genre Create Page', function () {
     beforeEach(function () {
         $this->create = livewire(CreateGenre::class, [
-            'panel' => 'staff',
+            'panel' => 'admin',
         ]);
     });
 
@@ -107,7 +109,7 @@ describe('Genre Edit Page', function () {
     beforeEach(function () {
         $this->edit = livewire(EditGenre::class, [
             'record' => $this->genre->getRouteKey(),
-            'panel' => 'staff',
+            'panel' => 'admin',
         ]);
     });
 
@@ -167,10 +169,12 @@ describe('Genre Edit Page', function () {
         ])->assertSuccessful();
     });
 
-    it('can not delete a genre from the edit page', function () {
+    it('can delete a genre from the edit page', function () {
         $this->genre;
 
         $this->edit
-            ->assertActionHidden(DeleteAction::class);
+            ->callAction(FormDeleteAction::class);
+
+        assertModelMissing($this->genre);
     });
 });

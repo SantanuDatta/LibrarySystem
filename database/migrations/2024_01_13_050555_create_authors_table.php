@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('authors', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Publisher::class);
+            $table->foreignIdFor(Publisher::class)->constrained('publishers');
             $table->string('name')->index();
             $table->date('date_of_birth')->nullable();
             $table->longText('bio')->nullable();

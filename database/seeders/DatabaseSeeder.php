@@ -63,6 +63,5 @@ class DatabaseSeeder extends Seeder
             ->recycle($users)
             ->recycle($books)
             ->create();
-
     }
 }

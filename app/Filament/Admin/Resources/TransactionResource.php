@@ -93,6 +93,7 @@ class TransactionResource extends Resource
                                                 || $get('status') === 'delayed')
                                             ->afterOrEqual('borrowed_date')
                                             ->live()
+                                            ->required(fn (string $context) => $context === 'edit')
                                             ->columnSpanFull(),
                                     ])->columns(2),
                             ])->columnSpan(2),
