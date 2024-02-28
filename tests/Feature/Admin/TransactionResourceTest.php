@@ -1,20 +1,22 @@
 <?php
 
 use App\Enums\BorrowedStatus;
-use App\Filament\Staff\Resources\TransactionResource\Pages\CreateTransaction;
-use App\Filament\Staff\Resources\TransactionResource\Pages\EditTransaction;
-use App\Filament\Staff\Resources\TransactionResource\Pages\ListTransactions;
+use App\Filament\Admin\Resources\TransactionResource\Pages\CreateTransaction;
+use App\Filament\Admin\Resources\TransactionResource\Pages\EditTransaction;
+use App\Filament\Admin\Resources\TransactionResource\Pages\ListTransactions;
 use App\Models\Book;
 use App\Models\Role;
 use App\Models\Transaction;
 use App\Models\User;
-use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteAction as FormDeleteAction;
+use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 
 use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\assertModelMissing;
 use function Pest\Livewire\livewire;
 
 beforeEach(function () {
-    asRole(Role::IS_STAFF);
+    asRole(Role::IS_ADMIN);
 
     $this->user = User::factory([
         'role_id' => Role::IS_BORROWER,
@@ -48,7 +50,7 @@ describe('Transaction List Page', function () {
     beforeEach(function () {
         $this->list = livewire(ListTransactions::class, [
             'record' => $this->transaction,
-            'panel' => 'staff',
+            'panel' => 'admin',
         ]);
     });
 
@@ -83,10 +85,10 @@ describe('Transaction List Page', function () {
             ->assertTableColumnFormattedStateSet('status', $transaction->status->getLabel(), record: $transaction);
     });
 
-    it('can create a new transaction but can not delete it', function () {
+    it('can delete a transaction', function () {
         $this->list
-            ->assertActionEnabled('create')
-            ->assertTableActionDisabled('delete', $this->transaction);
+            ->callTableAction(TableDeleteAction::class, $this->transaction);
+        assertModelMissing($this->transaction);
     });
 });
 
@@ -94,7 +96,7 @@ describe('Transaction Create Page', function () {
     beforeEach(function () {
         $this->create = livewire(CreateTransaction::class, [
             'record' => $this->transaction,
-            'panel' => 'staff',
+            'panel' => 'admin',
         ]);
     });
 
@@ -154,7 +156,7 @@ describe('Transaction Edit Page', function () {
     beforeEach(function () {
         $this->edit = livewire(EditTransaction::class, [
             'record' => $this->transaction->getRouteKey(),
-            'panel' => 'staff',
+            'panel' => 'admin',
         ]);
     });
 
@@ -264,10 +266,12 @@ describe('Transaction Edit Page', function () {
             ]);
     });
 
-    it('can not delate a transaction from the edit page', function () {
+    it('can delete a transaction from the edit page', function () {
         $this->transaction;
 
         $this->edit
-            ->assertActionHidden(DeleteAction::class);
+            ->callAction(FormDeleteAction::class);
+
+        assertModelMissing($this->transaction);
     });
 });
