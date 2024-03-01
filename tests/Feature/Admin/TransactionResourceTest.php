@@ -111,9 +111,6 @@ describe('Transaction Create Page', function () {
                 'available' => true,
             ]))
             ->for($this->user)
-            ->state([
-                'status' => BorrowedStatus::Borrowed,
-            ])
             ->make();
 
         $transaction = [
@@ -121,7 +118,7 @@ describe('Transaction Create Page', function () {
             'user_id' => $newTransaction->user->getKey(),
             'borrowed_date' => $newTransaction->borrowed_date,
             'borrowed_for' => $newTransaction->borrowed_for,
-            'status' => $newTransaction->status->value,
+            'status' => BorrowedStatus::Borrowed->value,
         ];
 
         $this->create
