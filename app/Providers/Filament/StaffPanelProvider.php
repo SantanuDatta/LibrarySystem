@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Staff\Pages\Auth\EditProfile;
 use App\Filament\Staff\Pages\Auth\Register;
+use App\Settings\GeneralSettings;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -18,6 +19,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class StaffPanelProvider extends PanelProvider
@@ -32,6 +34,14 @@ class StaffPanelProvider extends PanelProvider
             ->passwordReset()
             ->profile(EditProfile::class)
             ->emailVerification()
+            ->favicon(fn (GeneralSettings $settings) => Storage::disk('public')
+                ->url($settings->site_favicon))
+            ->brandName(fn (GeneralSettings $settings) => $settings->site_name)
+            ->brandLogo(fn (GeneralSettings $settings) => Storage::disk('public')
+                ->url($settings->site_logo))
+            ->darkModeBrandLogo(fn (GeneralSettings $settings) => Storage::disk('public')
+                ->url($settings->site_logo_dark))
+            ->brandLogoHeight(fn (GeneralSettings $settings) => $settings->site_logoHeight)
             ->colors([
                 'primary' => Color::Emerald,
             ])

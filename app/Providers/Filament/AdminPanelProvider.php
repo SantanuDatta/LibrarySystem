@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Settings\GeneralSettings;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -16,6 +17,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -28,6 +30,14 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->passwordReset()
+            ->favicon(fn (GeneralSettings $settings) => Storage::disk('public')
+                ->url($settings->site_favicon))
+            ->brandName(fn (GeneralSettings $settings) => $settings->site_name)
+            ->brandLogo(fn (GeneralSettings $settings) => Storage::disk('public')
+                ->url($settings->site_logo))
+            ->darkModeBrandLogo(fn (GeneralSettings $settings) => Storage::disk('public')
+                ->url($settings->site_logo_dark))
+            ->brandLogoHeight(fn (GeneralSettings $settings) => $settings->site_logoHeight)
             ->colors([
                 'primary' => Color::Red,
             ])
