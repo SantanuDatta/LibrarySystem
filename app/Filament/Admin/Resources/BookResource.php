@@ -130,8 +130,8 @@ class BookResource extends Resource
                                             ->collection('coverBooks')
                                             ->responsiveImages()
                                             ->storeFileNamesIn('cover_image_file_names')
-                                            ->deleteUploadedFileUsing(function ($record) {
-                                                Storage::disk('public')->delete($record);
+                                            ->deleteUploadedFileUsing(function ($file) {
+                                                Storage::disk('public')->delete($file);
                                             }),
                                     ]),
                                 Section::make()

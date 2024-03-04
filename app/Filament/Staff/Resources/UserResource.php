@@ -81,8 +81,9 @@ class UserResource extends Resource
                                             ->image()
                                             ->imageEditor()
                                             ->avatar()
-                                            ->deleteUploadedFileUsing(function ($record) {
-                                                Storage::disk('public')->delete($record->avatar_url);
+                                            ->directory('users')
+                                            ->deleteUploadedFileUsing(function ($file) {
+                                                Storage::disk('public')->delete($file);
                                             })
                                             ->extraAttributes([
                                                 'class' => 'justify-center',
@@ -119,7 +120,9 @@ class UserResource extends Resource
                     EditAction::make(),
                     DeleteAction::make()
                         ->before(function ($record) {
-                            Storage::disk('public')->delete($record->avatar_url);
+                            if (! is_null($record->avatar_url)) {
+                                Storage::disk('public')->delete($record->avatar_url);
+                            }
                         }),
                 ]),
             ])
@@ -128,7 +131,9 @@ class UserResource extends Resource
                     DeleteBulkAction::make()
                         ->before(function ($records) {
                             $records->each(function ($record) {
-                                Storage::disk('public')->delete($record->avatar_url);
+                                if (! is_null($record->avatar_url)) {
+                                    Storage::disk('public')->delete($record->avatar_url);
+                                }
                             });
                         }),
                 ]),

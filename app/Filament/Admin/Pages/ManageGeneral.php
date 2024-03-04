@@ -25,11 +25,6 @@ class ManageGeneral extends SettingsPage
 
     protected static ?string $navigationLabel = 'General Settings';
 
-    /**
-     * @var array<string, mixed> | null
-     */
-    public ?array $data = [];
-
     public function form(Form $form): Form
     {
         return $form
@@ -58,39 +53,26 @@ class ManageGeneral extends SettingsPage
                                             ->image()
                                             ->directory('sites')
                                             ->acceptedFileTypes(['image/x-icon', 'image/vnd.microsoft.icon'])
+                                            ->deleteUploadedFileUsing(fn ($file) => Storage::disk('public')->delete($file))
                                             ->nullable(),
                                         FileUpload::make('site_logo')
                                             ->image()
                                             ->directory('sites')
                                             ->label('Site Logo (General)')
+                                            ->deleteUploadedFileUsing(fn ($file) => Storage::disk('public')->delete($file))
                                             ->nullable(),
+                                    ])->columnSpanFull(),
+                                Section::make('Dark Mode Logo [Optional]')
+                                    ->schema([
                                         FileUpload::make('site_logo_dark')
                                             ->image()
                                             ->directory('sites')
                                             ->label('Site Logo (Dark Mode)')
+                                            ->deleteUploadedFileUsing(fn ($file) => Storage::disk('public')->delete($file))
                                             ->nullable(),
-                                    ])->columnSpanFull(),
+                                    ])->collapsed(),
                             ])->columnSpan(['sm' => 2, 'md' => 1, 'xxl' => 1]),
                     ]),
-            ])->statePath('data');
-    }
-
-    protected function handleUpload(array $data): array
-    {
-        $data['site_favicon'] = collect($data['site_favicon'])->first();
-        if (isset($data['site_favicon']) && $this->site_favicon !== $data['site_favicon']) {
-            if ($this->site_favicon !== null) {
-                Storage::disk('public')->delete($this->site_favicon);
-            }
-        }
-
-        $data['site_logo'] = collect($data['site_logo'])->first();
-        if (isset($data['site_logo']) && $this->site_logo !== $data['site_logo']) {
-            if ($this->site_logo !== null) {
-                Storage::disk('public')->delete($this->site_logo);
-            }
-        }
-
-        return $data;
+            ]);
     }
 }

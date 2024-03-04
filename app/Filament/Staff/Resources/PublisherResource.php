@@ -59,8 +59,8 @@ class PublisherResource extends Resource
                                             ->image()
                                             ->imageEditor()
                                             ->collection('publishers')
-                                            ->deleteUploadedFileUsing(function ($record) {
-                                                Storage::disk('public')->delete($record);
+                                            ->deleteUploadedFileUsing(function ($file) {
+                                                Storage::disk('public')->delete($file);
                                             })
                                             ->extraAttributes([
                                                 'class' => 'justify-center',

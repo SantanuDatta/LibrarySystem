@@ -22,7 +22,7 @@ class UserObserver
     public function created(User $user): void
     {
         // Check if the user is a borrower
-        if ($user->role->name == 'borrower') {
+        if (auth()->user()->role->name == 'staff' && $user->role->name == 'borrower') {
             Notification::make()
                 ->title('New Borrower has been Registered')
                 ->body(

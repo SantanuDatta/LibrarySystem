@@ -39,8 +39,13 @@ class StaffPanelProvider extends PanelProvider
             ->brandName(fn (GeneralSettings $settings) => $settings->site_name)
             ->brandLogo(fn (GeneralSettings $settings) => Storage::disk('public')
                 ->url($settings->site_logo))
-            ->darkModeBrandLogo(fn (GeneralSettings $settings) => Storage::disk('public')
-                ->url($settings->site_logo_dark))
+            ->darkModeBrandLogo(function (GeneralSettings $settings) {
+                $darkBrandLogo = $settings->site_logo_dark
+                ? $settings->site_logo_dark
+                : $settings->site_logo;
+
+                return Storage::disk('public')->url($darkBrandLogo);
+            })
             ->brandLogoHeight(fn (GeneralSettings $settings) => $settings->site_logoHeight)
             ->colors([
                 'primary' => Color::Emerald,
