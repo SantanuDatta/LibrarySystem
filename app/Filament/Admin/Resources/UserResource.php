@@ -51,7 +51,7 @@ class UserResource extends Resource
                                             ->required(),
                                         TextInput::make('email')
                                             ->email()
-                                            ->requiredWith('name')
+                                            ->required()
                                             ->unique(ignoreRecord: true),
                                         TextInput::make('password')
                                             ->password()
@@ -102,6 +102,7 @@ class UserResource extends Resource
         return $table
             ->columns([
                 ImageColumn::make('avatar_url')
+                    ->label('Avatar')
                     ->defaultImageUrl(fn ($record) => $record->avatar_url
                         ?: (new UiAvatarsProvider())->get($record))
                     ->circular(),

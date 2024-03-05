@@ -93,7 +93,6 @@ describe('Transaction List Page', function () {
 describe('Transaction Create Page', function () {
     beforeEach(function () {
         $this->create = livewire(CreateTransaction::class, [
-            'record' => $this->transaction,
             'panel' => 'staff',
         ]);
     });
