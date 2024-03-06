@@ -10,6 +10,7 @@ use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 use Illuminate\Http\UploadedFile;
 
 use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Laravel\assertModelMissing;
 use function Pest\Livewire\livewire;
 use function PHPUnit\Framework\assertTrue;
@@ -57,11 +58,28 @@ describe('Publisher List Page', function () {
             ->assertTableColumnStateSet('founded', $publisher->founded, record: $publisher);
     });
 
-    it('can delete a publisher', function () {
+    it('can delete a publisher without a logo', function () {
         $this->list
             ->callTableAction(TableDeleteAction::class, $this->publisher);
 
         assertModelMissing($this->publisher);
+    });
+
+    it('can delete a publisher with logo', function () {
+        $publisher = $this->publisher->getFirstMedia('publishers');
+
+        $this->list
+            ->callTableAction(TableDeleteAction::class, $this->publisher);
+
+        assertModelMissing($this->publisher);
+
+        if ($publisher !== null) {
+            assertDatabaseMissing('media', [
+                'model_type' => Publisher::class,
+                'model_id' => $this->publisher->id,
+                'collection_name' => 'publishers',
+            ]);
+        }
     });
 });
 
@@ -187,12 +205,29 @@ describe('Publisher Edit Page', function () {
             ]);
     });
 
-    it('can delete a publisher from the edit page', function () {
+    it('can delete a publisher without a logo from the edit page', function () {
         $this->publisher;
 
         $this->edit
             ->callAction(FormDeleteAction::class);
 
         assertModelMissing($this->publisher);
+    });
+
+    it('can delete a publisher with a logo from the edit page', function () {
+        $publisher = $this->publisher->getFirstMedia('publishers');
+
+        $this->edit
+            ->callAction(FormDeleteAction::class);
+
+        assertModelMissing($this->publisher);
+
+        if ($publisher !== null) {
+            assertDatabaseMissing('media', [
+                'model_type' => Publisher::class,
+                'model_id' => $this->publisher->id,
+                'collection_name' => 'publishers',
+            ]);
+        }
     });
 });

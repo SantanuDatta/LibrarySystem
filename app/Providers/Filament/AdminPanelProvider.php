@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Admin\Pages\Auth\Login;
 use App\Settings\GeneralSettings;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -28,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(Login::class)
             ->passwordReset()
             ->favicon(fn (GeneralSettings $settings) => Storage::disk('public')
                 ->url($settings->site_favicon))

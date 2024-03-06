@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Staff\Pages\Auth\EditProfile;
+use App\Filament\Staff\Pages\Auth\Login;
 use App\Filament\Staff\Pages\Auth\Register;
 use App\Settings\GeneralSettings;
 use Filament\Http\Middleware\Authenticate;
@@ -29,7 +30,7 @@ class StaffPanelProvider extends PanelProvider
         return $panel
             ->id('staff')
             ->path('staff')
-            ->login()
+            ->login(Login::class)
             ->registration(Register::class)
             ->passwordReset()
             ->profile(EditProfile::class)

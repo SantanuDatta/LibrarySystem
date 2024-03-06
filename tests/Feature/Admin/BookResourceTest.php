@@ -13,6 +13,7 @@ use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 use Illuminate\Http\UploadedFile;
 
 use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Laravel\assertModelMissing;
 use function Pest\Livewire\livewire;
 use function PHPUnit\Framework\assertTrue;
@@ -66,10 +67,27 @@ describe('Book List Page', function () {
             ->assertTableColumnStateSet('available', $book->available, record: $book);
     });
 
-    it('can delete a book', function () {
+    it('can delete a book without a cover', function () {
         $this->list
             ->callTableAction(TableDeleteAction::class, $this->book);
         assertModelMissing($this->book);
+    });
+
+    it('can delete a book with cover', function () {
+        $book = $this->book->getFirstMedia('coverBooks');
+
+        $this->list
+            ->callTableAction(TableDeleteAction::class, $this->book);
+
+        assertModelMissing($this->book);
+
+        if ($book !== null) {
+            assertDatabaseMissing('media', [
+                'model_type' => Book::class,
+                'model_id' => $this->book->id,
+                'collection_name' => 'coverBooks',
+            ]);
+        }
     });
 });
 
@@ -273,12 +291,29 @@ describe('Book Edit Page', function () {
             ]);
     });
 
-    it('can delete a book from the edit page', function () {
+    it('can delete a book from the edit page without a cover', function () {
         $this->book;
 
         $this->edit
             ->callAction(FormDeleteAction::class);
 
         assertModelMissing($this->book);
+    });
+
+    it('can delete a book from the edit page with a cover', function () {
+        $book = $this->book->getFirstMedia('coverBooks');
+
+        $this->edit
+            ->callAction(FormDeleteAction::class);
+
+        assertModelMissing($this->book);
+
+        if ($book !== null) {
+            assertDatabaseMissing('media', [
+                'model_type' => Book::class,
+                'model_id' => $this->book->id,
+                'collection_name' => 'coverBooks',
+            ]);
+        }
     });
 });

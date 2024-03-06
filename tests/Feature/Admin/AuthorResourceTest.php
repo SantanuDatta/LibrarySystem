@@ -13,6 +13,7 @@ use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 use Illuminate\Http\UploadedFile;
 
 use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Laravel\assertModelMissing;
 use function Pest\Livewire\livewire;
 use function PHPUnit\Framework\assertTrue;
@@ -64,10 +65,27 @@ describe('Author List Page', function () {
             ->assertTableColumnStateSet('date_of_birth', $author->date_of_birth, record: $author);
     });
 
-    it('can delete an author', function () {
+    it('can delete an author without avatar', function () {
         $this->list
             ->callTableAction(TableDeleteAction::class, $this->author);
         assertModelMissing($this->author);
+    });
+
+    it('can delete an author and its avatar', function () {
+        $avatar = $this->author->getFirstMedia('avatars');
+
+        $this->list
+            ->callTableAction(TableDeleteAction::class, $this->author);
+
+        assertModelMissing($this->author);
+
+        if ($avatar !== null) {
+            assertDatabaseMissing('media', [
+                'model_type' => Author::class,
+                'model_id' => $this->author->id,
+                'collection_name' => 'avatars',
+            ]);
+        }
     });
 });
 
@@ -216,7 +234,7 @@ describe('Author Edit Page', function () {
         ])->assertSuccessful();
     });
 
-    it('can delete an author from the edit page', function () {
+    it('can delete an author without avatar from the edit page', function () {
         $this->author;
 
         $this->edit
@@ -224,4 +242,22 @@ describe('Author Edit Page', function () {
 
         assertModelMissing($this->author);
     });
+
+    it('can delete an author and its avatar from the edit page', function () {
+        $avatar = $this->author->getFirstMedia('avatars');
+
+        $this->edit
+            ->callAction(FormDeleteAction::class);
+
+        assertModelMissing($this->author);
+
+        if ($avatar !== null) {
+            assertDatabaseMissing('media', [
+                'model_type' => Author::class,
+                'model_id' => $this->author->id,
+                'collection_name' => 'avatars',
+            ]);
+        }
+    });
+
 });

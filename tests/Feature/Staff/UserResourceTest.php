@@ -5,7 +5,9 @@ use App\Filament\Staff\Resources\UserResource\Pages\EditUser;
 use App\Filament\Staff\Resources\UserResource\Pages\ListUsers;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
@@ -18,6 +20,11 @@ beforeEach(function () {
         'role_id' => Role::IS_BORROWER,
     ])
         ->create();
+    $this->makeUser = User::factory([
+        'role_id' => Role::IS_BORROWER,
+    ])
+        ->make();
+    Storage::fake('public');
 });
 
 describe('User List Page', function () {
@@ -71,6 +78,8 @@ describe('User Create Page', function () {
         $this->create = livewire(CreateUser::class, [
             'panel' => 'staff',
         ]);
+        $this->imagePath = UploadedFile::fake()
+            ->image('image.jpg', 50, 50);
     });
 
     it('can render the create page', function () {
@@ -79,30 +88,56 @@ describe('User Create Page', function () {
     });
 
     it('can create a user', function () {
-        $newUser = User::factory([
-            'role_id' => Role::IS_BORROWER,
-        ])
-            ->make();
+        $newUser = $this->makeUser;
 
         $hassedPassword = Hash::make($newUser->password);
 
         $this->create
             ->fillForm([
-                'avatar_url' => $newUser->avatar_url,
                 'name' => $newUser->name,
                 'email' => $newUser->email,
                 'password' => $hassedPassword,
                 'passwordConfirmation' => $hassedPassword,
                 'address' => $newUser->address,
                 'phone' => $newUser->phone,
-                'role_id' => $newUser->role_id,
                 'status' => $newUser->status,
             ])
             ->call('create')
             ->assertHasNoFormErrors();
 
         assertDatabaseHas('users', [
-            'avatar_url' => $newUser->avatar_url,
+            'name' => $newUser->name,
+            'email' => $newUser->email,
+            'address' => $newUser->address,
+            'phone' => $newUser->phone,
+            'role_id' => $newUser->role_id,
+            'status' => $newUser->status,
+        ]);
+
+        assertTrue(Hash::check($newUser->password, $hassedPassword));
+    });
+
+    it('can create a user with an avatar', function () {
+        $newUser = $this->makeUser;
+
+        $hassedPassword = Hash::make($newUser->password);
+
+        $this->create
+            ->fillForm([
+                'avatar_url.0' => $this->imagePath->hashName(),
+                'name' => $newUser->name,
+                'email' => $newUser->email,
+                'password' => $hassedPassword,
+                'passwordConfirmation' => $hassedPassword,
+                'address' => $newUser->address,
+                'phone' => $newUser->phone,
+                'status' => $newUser->status,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        assertDatabaseHas('users', [
+            'avatar_url' => $this->imagePath->hashName(),
             'name' => $newUser->name,
             'email' => $newUser->email,
             'address' => $newUser->address,
@@ -138,6 +173,8 @@ describe('User Edit Page', function () {
             'record' => $this->user->getRouteKey(),
             'panel' => 'staff',
         ]);
+        $this->updatedImagePath = UploadedFile::fake()
+            ->image('updated_image.jpg', 50, 50);
     });
 
     it('can render the edit page', function () {
@@ -161,39 +198,64 @@ describe('User Edit Page', function () {
             ]);
     });
 
-    it('can update a user', function () {
+    it('can update user', function () {
         $user = $this->user;
-
-        $updatedUser = $user->make();
-
-        $updatedUserData = [
-            'name' => $user->name,
-            'email' => $user->email,
-            'password' => $user->password,
-            'passwordConfirmation' => $user->password,
-            'address' => $user->address,
-            'phone' => $user->phone,
-            'status' => $user->status,
-        ];
-
-        $user->update($updatedUserData);
+        $updatedUser = $this->makeUser;
 
         $this->edit
-            ->fillForm($updatedUserData)
+            ->fillForm([
+                'name' => $updatedUser->name,
+                'email' => $updatedUser->email,
+                'password' => $updatedUser->password,
+                'passwordConfirmation' => $updatedUser->password,
+                'address' => $updatedUser->address,
+                'phone' => $updatedUser->phone,
+                'status' => $updatedUser->status,
+            ])
             ->call('save')
             ->assertHasNoFormErrors();
 
-        $updatedUser = $user->refresh();
+        expect($user->refresh())
+            ->name->toBe($updatedUser->name)
+            ->email->toBe($updatedUser->email)
+            ->address->toBe($updatedUser->address)
+            ->phone->toBe($updatedUser->phone)
+            ->status->toBe($updatedUser->status);
 
-        expect($updatedUser)
-            ->name->toBe($updatedUserData['name'])
-            ->email->toBe($updatedUserData['email'])
-            ->address->toBe($updatedUserData['address'])
-            ->phone->toBe($updatedUserData['phone'])
-            ->status->toBe($updatedUserData['status']);
+        if ($updatedUser['password']) {
+            assertTrue(Hash::check($updatedUser['password'], $user->password));
+        }
+    });
 
-        if ($updatedUserData['password']) {
-            assertTrue(Hash::check($updatedUserData['password'], $updatedUser->password));
+    it('can update user with an avatar', function () {
+        $user = $this->user;
+
+        $updatedUser = $this->makeUser;
+
+        $this->edit
+            ->fillForm([
+                'avatar_url.0' => $this->updatedImagePath->hashName(),
+                'name' => $updatedUser->name,
+                'email' => $updatedUser->email,
+                'password' => $updatedUser->password,
+                'passwordConfirmation' => $updatedUser->password,
+                'address' => $updatedUser->address,
+                'phone' => $updatedUser->phone,
+                'status' => $updatedUser->status,
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        expect($user->refresh())
+            ->avatar_url->toBe($this->updatedImagePath->hashName())
+            ->name->toBe($updatedUser->name)
+            ->email->toBe($updatedUser->email)
+            ->address->toBe($updatedUser->address)
+            ->phone->toBe($updatedUser->phone)
+            ->status->toBe($updatedUser->status);
+
+        if ($updatedUser['password']) {
+            assertTrue(Hash::check($updatedUser['password'], $user->password));
         }
     });
 
