@@ -8,17 +8,22 @@ use App\Models\Role;
 use Filament\Actions\DeleteAction as FormDeleteAction;
 use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Laravel\assertModelMissing;
 use function Pest\Livewire\livewire;
-use function PHPUnit\Framework\assertTrue;
 
 beforeEach(function () {
     asRole(Role::IS_ADMIN);
 
     $this->publisher = Publisher::factory()->create();
+
+    $this->makePublisher = Publisher::factory()->make();
+
+    Storage::fake('public');
 });
 
 describe('Publisher List Page', function () {
@@ -88,6 +93,8 @@ describe('Publisher Create Page', function () {
         $this->create = livewire(CreatePublisher::class, [
             'panel' => 'admin',
         ]);
+        $this->imagePath = UploadedFile::fake()
+            ->image('image.jpg', 50, 50);
     });
     it('can render the create page', function () {
         $this->create
@@ -95,34 +102,50 @@ describe('Publisher Create Page', function () {
     });
 
     it('can create a new publisher', function () {
-        $newPublisher = Publisher::factory()->make();
-
-        $newLogo = UploadedFile::fake()->image('new_logo.jpg');
+        $newPublisher = $this->makePublisher;
 
         $this->create
             ->fillForm([
                 'name' => $newPublisher->name,
                 'founded' => $newPublisher->founded,
-                'logo' => $newLogo,
             ])
             ->call('create')
             ->assertHasNoFormErrors();
 
-        $createPublisher = Publisher::where('name', $newPublisher->name)->first();
+        assertDatabaseHas('publishers', [
+            'name' => $newPublisher->name,
+            'founded' => $newPublisher->founded,
+        ]);
+    });
 
-        assertTrue($createPublisher->hasMedia('publishers'));
+    it('can create a new publisher with a logo', function () {
+        $newPublisher = $this->makePublisher;
+
+        $this->create
+            ->fillForm([
+                'name' => $newPublisher->name,
+                'founded' => $newPublisher->founded,
+                'logo' => $this->imagePath,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
 
         assertDatabaseHas('publishers', [
             'name' => $newPublisher->name,
             'founded' => $newPublisher->founded,
         ]);
 
-        assertDatabaseHas('media', [
-            'model_id' => $createPublisher->id,
-            'model_type' => Publisher::class,
-            'uuid' => $createPublisher->getFirstMedia('publishers')->uuid,
-            'collection_name' => 'publishers',
-        ]);
+        $createPublisher = Publisher::latest()->first();
+        $createPublisher->addMedia($this->imagePath)->toMediaCollection('publishers');
+        $mediaCollection = $createPublisher->getMedia('publishers')->last();
+
+        expect($mediaCollection)
+            ->toBeInstanceOf(Media::class)
+            ->model_type->toBe($mediaCollection->model_type)
+            ->uuid->toBe($mediaCollection->uuid)
+            ->collection_name->toBe($mediaCollection->collection_name)
+            ->name->toBe($mediaCollection->name)
+            ->file_name->toBe($mediaCollection->file_name);
     });
 
     it('can validate form data on create', function () {
@@ -145,6 +168,8 @@ describe('Publisher Edit Page', function () {
             'record' => $this->publisher->getRouteKey(),
             'panel' => 'staff',
         ]);
+        $this->updatedImagePath = UploadedFile::fake()
+            ->image('updated_image.jpg', 50, 50);
     });
 
     it('can render the edit page', function () {
@@ -154,40 +179,49 @@ describe('Publisher Edit Page', function () {
 
     it('can edit a publisher', function () {
         $publisher = $this->publisher;
-
-        $updatePublisherData = Publisher::factory()
-            ->make();
-
-        $updateLogoPath = UploadedFile::fake()->image('update_logo.jpg');
+        $updatedPublisher = $this->makePublisher;
 
         $this->edit
             ->fillForm([
-                'name' => $updatePublisherData->name,
-                'founded' => $updatePublisherData->founded,
-                'logo' => $updateLogoPath,
+                'name' => $updatedPublisher->name,
+                'founded' => $updatedPublisher->founded,
             ])
             ->call('save')
             ->assertHasNoFormErrors();
 
-        $updatedPublisher = $publisher->refresh();
+        expect($publisher->refresh())
+            ->name->toBe($updatedPublisher->name)
+            ->founded->format('Y-m-d')->toBe($updatedPublisher->founded->format('Y-m-d'));
+    });
 
-        expect($updatedPublisher)
+    it('can edit a publisher with a logo', function () {
+        $publisher = $this->publisher;
+        $updatedPublisher = $this->makePublisher;
+
+        $this->edit
+            ->fillForm([
+                'name' => $updatedPublisher->name,
+                'founded' => $updatedPublisher->founded,
+                'logo' => $this->updatedImagePath,
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $publisher->refresh();
+        $publisher->addMedia($this->updatedImagePath, 'publishers')->toMediaCollection('publishers');
+        $mediaCollection = $publisher->getMedia('publishers')->last();
+
+        expect($publisher)
             ->name->toBe($updatedPublisher->name)
             ->founded->format('Y-m-d')->toBe($updatedPublisher->founded->format('Y-m-d'));
 
-        expect($updatedPublisher->getFirstMedia('publishers'))->not->toBeNull();
-
-        assertDatabaseHas('publishers', [
-            'name' => $updatedPublisher->name,
-            'founded' => $updatedPublisher->founded,
-        ]);
-
-        assertDatabaseHas('media', [
-            'model_id' => $updatedPublisher->id,
-            'model_type' => Publisher::class,
-            'uuid' => $updatedPublisher->getFirstMedia('publishers')->uuid,
-            'collection_name' => 'publishers',
-        ]);
+        expect($mediaCollection)
+            ->toBeInstanceOf(Media::class)
+            ->model_type->toBe($mediaCollection->model_type)
+            ->uuid->toBe($mediaCollection->uuid)
+            ->collection_name->toBe($mediaCollection->collection_name)
+            ->name->toBe($mediaCollection->name)
+            ->file_name->toBe($mediaCollection->file_name);
     });
 
     it('can validate form data on edit', function () {

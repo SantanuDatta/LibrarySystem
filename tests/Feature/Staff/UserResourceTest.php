@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Storage;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
-use function PHPUnit\Framework\assertTrue;
 
 beforeEach(function () {
     asRole(Role::IS_STAFF);
@@ -20,10 +19,12 @@ beforeEach(function () {
         'role_id' => Role::IS_BORROWER,
     ])
         ->create();
+
     $this->makeUser = User::factory([
         'role_id' => Role::IS_BORROWER,
     ])
         ->make();
+
     Storage::fake('public');
 });
 
@@ -90,14 +91,14 @@ describe('User Create Page', function () {
     it('can create a user', function () {
         $newUser = $this->makeUser;
 
-        $hassedPassword = Hash::make($newUser->password);
+        $hashedPassword = Hash::make($newUser->password);
 
         $this->create
             ->fillForm([
                 'name' => $newUser->name,
                 'email' => $newUser->email,
-                'password' => $hassedPassword,
-                'passwordConfirmation' => $hassedPassword,
+                'password' => $hashedPassword,
+                'passwordConfirmation' => $hashedPassword,
                 'address' => $newUser->address,
                 'phone' => $newUser->phone,
                 'status' => $newUser->status,
@@ -105,30 +106,31 @@ describe('User Create Page', function () {
             ->call('create')
             ->assertHasNoFormErrors();
 
-        assertDatabaseHas('users', [
-            'name' => $newUser->name,
-            'email' => $newUser->email,
-            'address' => $newUser->address,
-            'phone' => $newUser->phone,
-            'role_id' => $newUser->role_id,
-            'status' => $newUser->status,
-        ]);
+        $createdUser = User::whereName($newUser->name)->first();
 
-        assertTrue(Hash::check($newUser->password, $hassedPassword));
+        expect($createdUser)
+            ->name->toBe($newUser->name)
+            ->email->toBe($newUser->email)
+            ->address->toBe($newUser->address)
+            ->phone->toBe($newUser->phone)
+            ->role_id->toBe($newUser->role_id)
+            ->status->toBe($newUser->status);
+
+        expect(Hash::check($newUser->password, $hashedPassword))->toBeTrue();
     });
 
     it('can create a user with an avatar', function () {
         $newUser = $this->makeUser;
 
-        $hassedPassword = Hash::make($newUser->password);
+        $hashedPassword = Hash::make($newUser->password);
 
         $this->create
             ->fillForm([
                 'avatar_url.0' => $this->imagePath->hashName(),
                 'name' => $newUser->name,
                 'email' => $newUser->email,
-                'password' => $hassedPassword,
-                'passwordConfirmation' => $hassedPassword,
+                'password' => $hashedPassword,
+                'passwordConfirmation' => $hashedPassword,
                 'address' => $newUser->address,
                 'phone' => $newUser->phone,
                 'status' => $newUser->status,
@@ -146,7 +148,7 @@ describe('User Create Page', function () {
             'status' => $newUser->status,
         ]);
 
-        assertTrue(Hash::check($newUser->password, $hassedPassword));
+        expect(Hash::check($newUser->password, $hashedPassword))->toBeTrue();
     });
 
     it('can validate form data on create', function () {
@@ -223,7 +225,7 @@ describe('User Edit Page', function () {
             ->status->toBe($updatedUser->status);
 
         if ($updatedUser['password']) {
-            assertTrue(Hash::check($updatedUser['password'], $user->password));
+            expect(Hash::check($updatedUser['password'], $user->password))->toBeTrue();
         }
     });
 
@@ -255,7 +257,7 @@ describe('User Edit Page', function () {
             ->status->toBe($updatedUser->status);
 
         if ($updatedUser['password']) {
-            assertTrue(Hash::check($updatedUser['password'], $user->password));
+            expect(Hash::check($updatedUser['password'], $user->password))->toBeTrue();
         }
     });
 

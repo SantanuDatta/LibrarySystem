@@ -16,6 +16,8 @@ beforeEach(function () {
     asRole(Role::IS_STAFF);
 
     $this->genre = Genre::factory()->create();
+
+    $this->makeGenre = Genre::factory()->make();
 });
 
 describe('Genre List Page', function () {
@@ -74,7 +76,7 @@ describe('Genre Create Page', function () {
     });
 
     it('can create a new genre', function () {
-        $newGenre = Genre::factory()->make();
+        $newGenre = $this->makeGenre;
         $this->create
             ->fillForm([
                 'name' => $newGenre->name,
@@ -118,28 +120,21 @@ describe('Genre Edit Page', function () {
 
     it('can update a genre', function () {
         $genre = $this->genre;
-
-        $updatedGenre = $genre->make();
-
-        $updatedGenreData = [
-            'name' => $genre->name,
-            'bg_color' => $genre->bg_color,
-            'text_color' => $genre->text_color,
-        ];
-
-        $genre->update($updatedGenreData);
+        $updatedGenre = $this->makeGenre;
 
         $this->edit
-            ->fillForm($updatedGenreData)
+            ->fillForm([
+                'name' => $updatedGenre->name,
+                'bg_color' => $updatedGenre->bg_color,
+                'text_color' => $updatedGenre->text_color,
+            ])
             ->call('save')
             ->assertHasNoFormErrors();
 
-        $updatedGenre = $genre->refresh();
-
-        expect($updatedGenre)
-            ->name->toBe($updatedGenreData['name'])
-            ->bg_color->toBe($updatedGenreData['bg_color'])
-            ->text_color->toBe($updatedGenreData['text_color']);
+        expect($genre->refresh())
+            ->name->toBe($updatedGenre->name)
+            ->bg_color->toBe($updatedGenre->bg_color)
+            ->text_color->toBe($updatedGenre->text_color);
     });
 
     it('can validate form data on update', function () {

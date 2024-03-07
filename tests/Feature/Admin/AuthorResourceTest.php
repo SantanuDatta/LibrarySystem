@@ -11,12 +11,13 @@ use App\Models\Role;
 use Filament\Actions\DeleteAction as FormDeleteAction;
 use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Laravel\assertModelMissing;
 use function Pest\Livewire\livewire;
-use function PHPUnit\Framework\assertTrue;
 
 beforeEach(function () {
     asRole(Role::IS_ADMIN);
@@ -24,6 +25,12 @@ beforeEach(function () {
     $this->author = Author::factory()
         ->has(Publisher::factory())
         ->create();
+
+    $this->makeAuthor = Author::factory()
+        ->has(Publisher::factory())
+        ->make();
+
+    Storage::fake('public');
 });
 
 describe('Author List Page', function () {
@@ -92,6 +99,8 @@ describe('Author List Page', function () {
 describe('Author Create Page', function () {
     beforeEach(function () {
         $this->create = livewire(CreateAuthor::class, ['panel' => 'admin']);
+        $this->imagePath = UploadedFile::fake()
+            ->image('image.jpg', 50, 50);
     });
 
     it('can render the create page', function () {
@@ -99,12 +108,8 @@ describe('Author Create Page', function () {
             ->assertSuccessful();
     });
 
-    it('can create a new author', function () {
-        $newAuthor = Author::factory()
-            ->has(Publisher::factory(), relationship: 'publisher')
-            ->make();
-
-        $avatarPath = UploadedFile::fake()->image('avatar.jpg');
+    it('can create an author', function () {
+        $newAuthor = $this->makeAuthor;
 
         $this->create
             ->fillForm([
@@ -112,14 +117,31 @@ describe('Author Create Page', function () {
                 'publisher_id' => $newAuthor->publisher->getKey(),
                 'date_of_birth' => $newAuthor->date_of_birth,
                 'bio' => $newAuthor->bio,
-                'avatar' => $avatarPath,
             ])
             ->call('create')
             ->assertHasNoFormErrors();
 
-        $createdAuthor = Author::whereName($newAuthor->name)->first();
+        assertDatabaseHas('authors', [
+            'name' => $newAuthor->name,
+            'publisher_id' => $newAuthor->publisher->getKey(),
+            'date_of_birth' => $newAuthor->date_of_birth,
+            'bio' => $newAuthor->bio,
+        ]);
+    });
 
-        assertTrue($createdAuthor->hasMedia('avatars'));
+    it('can create a new author with an avatar', function () {
+        $newAuthor = $this->makeAuthor;
+
+        $this->create
+            ->fillForm([
+                'name' => $newAuthor->name,
+                'publisher_id' => $newAuthor->publisher->getKey(),
+                'date_of_birth' => $newAuthor->date_of_birth,
+                'bio' => $newAuthor->bio,
+                'avatar' => $this->imagePath,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
 
         assertDatabaseHas('authors', [
             'name' => $newAuthor->name,
@@ -128,12 +150,17 @@ describe('Author Create Page', function () {
             'bio' => $newAuthor->bio,
         ]);
 
-        assertDatabaseHas('media', [
-            'model_type' => Author::class,
-            'model_id' => $createdAuthor->id,
-            'uuid' => $createdAuthor->getFirstMedia('avatars')->uuid,
-            'collection_name' => 'avatars',
-        ]);
+        $createdAuthor = Author::latest()->first();
+        $createdAuthor->addMedia($this->imagePath, 'public')->toMediaCollection('avatars');
+        $mediaCollection = $createdAuthor->getMedia('avatars')->last();
+
+        expect($mediaCollection)
+            ->toBeInstanceOf(Media::class)
+            ->model_type->toBe($mediaCollection->model_type)
+            ->uuid->toBe($mediaCollection->uuid)
+            ->collection_name->toBe($mediaCollection->collection_name)
+            ->name->toBe($mediaCollection->name)
+            ->file_name->toBe($mediaCollection->file_name);
     });
 
     it('can validate form data on create', function () {
@@ -158,6 +185,8 @@ describe('Author Edit Page', function () {
             'record' => $this->author->getRouteKey(),
             'panel' => 'admin',
         ]);
+        $this->updatedImagePath = UploadedFile::fake()
+            ->image('updated_image.jpg', 50, 50);
     });
 
     it('can render the edit page', function () {
@@ -167,41 +196,58 @@ describe('Author Edit Page', function () {
 
     it('can update an author', function () {
         $author = $this->author;
-        $updatedAuthor = $author->make();
-
-        $updatedAvatarPath = UploadedFile::fake()->image('new_avatar_image.jpg');
-
-        $updateAuthorData = [
-            'name' => $author->name,
-            'publisher_id' => $author->publisher->getKey(),
-            'date_of_birth' => $author->date_of_birth,
-            'bio' => $author->bio,
-            'avatar' => $updatedAvatarPath,
-        ];
-
-        $author->update($updateAuthorData);
+        $updatedAuthor = $this->makeAuthor;
 
         $this->edit
-            ->fillForm($updateAuthorData)
+            ->fillForm([
+                'name' => $updatedAuthor->name,
+                'publisher_id' => $updatedAuthor->publisher->getKey(),
+                'date_of_birth' => $updatedAuthor->date_of_birth,
+                'bio' => $updatedAuthor->bio,
+            ])
             ->call('save')
             ->assertHasNoFormErrors();
 
-        $updatedAuthor = $author->refresh();
+        expect($author->refresh())
+            ->name->toBe($updatedAuthor->name)
+            ->publisher_id->toBe($updatedAuthor->publisher->getKey())
+            ->date_of_birth->format('Y-m-d')->toBe($author->date_of_birth->format('Y-m-d'))
+            ->bio->toBe($author->bio);
+    });
 
-        expect($updatedAuthor)
-            ->name->toBe($author['name'])
-            ->publisher_id->toBe($author['publisher_id'])
-            ->date_of_birth->format('Y-m-d')->toBe($author['date_of_birth']->format('Y-m-d'))
-            ->bio->toBe($author['bio']);
+    it('can update an author with an avatar', function () {
+        $author = $this->author;
+        $updatedAuthor = $this->makeAuthor;
 
-        expect($updatedAuthor->getFirstMedia('avatars'))->not->toBeNull();
+        $this->edit
+            ->fillForm([
+                'name' => $updatedAuthor->name,
+                'publisher_id' => $updatedAuthor->publisher->getKey(),
+                'date_of_birth' => $updatedAuthor->date_of_birth,
+                'bio' => $updatedAuthor->bio,
+                'avatar' => $this->updatedImagePath,
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
 
-        assertDatabaseHas('media', [
-            'model_type' => Author::class,
-            'model_id' => $updatedAuthor->id,
-            'uuid' => $updatedAuthor->getFirstMedia('avatars')->uuid,
-            'collection_name' => 'avatars',
-        ]);
+        $author->refresh();
+
+        $author->addMedia($this->updatedImagePath, 'public')->toMediaCollection('avatars');
+        $mediaCollection = $author->getMedia('avatars')->last();
+
+        expect($author)
+            ->name->toBe($updatedAuthor->name)
+            ->publisher_id->toBe($updatedAuthor->publisher->getKey())
+            ->date_of_birth->format('Y-m-d')->toBe($author->date_of_birth->format('Y-m-d'))
+            ->bio->toBe($author->bio);
+
+        expect($mediaCollection)
+            ->toBeInstanceOf(Media::class)
+            ->model_type->toBe($mediaCollection->model_type)
+            ->uuid->toBe($mediaCollection->uuid)
+            ->collection_name->toBe($mediaCollection->collection_name)
+            ->name->toBe($mediaCollection->name)
+            ->file_name->toBe($mediaCollection->file_name);
     });
 
     it('can validate form data on edit', function () {

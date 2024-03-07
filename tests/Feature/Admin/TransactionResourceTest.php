@@ -30,6 +30,13 @@ beforeEach(function () {
         ]))
         ->for($this->user)
         ->create();
+
+    $this->makeTransaction = Transaction::factory()
+        ->for(Book::factory([
+            'available' => true,
+        ]))
+        ->for($this->user)
+        ->make();
 });
 
 describe('Relation check with the user', function () {
@@ -106,28 +113,28 @@ describe('Transaction Create Page', function () {
     });
 
     it('can create a new transaction', function () {
-        $newTransaction = Transaction::factory()
-            ->for(Book::factory([
-                'available' => true,
-            ]))
-            ->for($this->user)
-            ->make();
+        $newTransaction = $this->makeTransaction;
 
-        $transaction = [
+        $this->create
+            ->fillForm([
+                'book_id' => $newTransaction->book->getKey(),
+                'user_id' => $newTransaction->user->getKey(),
+                'borrowed_date' => $newTransaction->borrowed_date,
+                'borrowed_for' => $newTransaction->borrowed_for,
+                'status' => BorrowedStatus::Borrowed->value,
+            ])
+            ->call('create')
+            ->assertFormFieldIsHidden('returned_date')
+            ->assertHasNoFormErrors();
+
+        assertDatabaseHas('transactions', [
             'book_id' => $newTransaction->book->getKey(),
             'user_id' => $newTransaction->user->getKey(),
             'borrowed_date' => $newTransaction->borrowed_date,
             'borrowed_for' => $newTransaction->borrowed_for,
             'status' => BorrowedStatus::Borrowed->value,
-        ];
-
-        $this->create
-            ->fillForm($transaction)
-            ->call('create')
-            ->assertFormFieldIsHidden('returned_date')
-            ->assertHasNoFormErrors();
-
-        assertDatabaseHas('transactions', $transaction);
+            'returned_date' => null,
+        ]);
     });
 
     it('can validate form data on create', function () {
@@ -177,7 +184,7 @@ describe('Transaction Edit Page', function () {
 
     it('can update the transaction when it is returned', function () {
         $transaction = $this->transaction;
-        $updatedTransaction = $transaction->make();
+        $updatedTransaction = $this->makeTransaction;
 
         $updatedTransactionData = [
             'book_id' => $transaction->book->getKey(),
@@ -208,7 +215,7 @@ describe('Transaction Edit Page', function () {
 
     it('can update the transaction when it is delayed and fine is applied', function () {
         $transaction = $this->transaction;
-        $updatedTransaction = $transaction->make();
+        $updatedTransaction = $this->makeTransaction;
 
         $updatedTransactionData = [
             'book_id' => $transaction->book->getKey(),

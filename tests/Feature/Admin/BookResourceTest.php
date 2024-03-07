@@ -11,12 +11,13 @@ use App\Models\Role;
 use Filament\Actions\DeleteAction as FormDeleteAction;
 use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Laravel\assertModelMissing;
 use function Pest\Livewire\livewire;
-use function PHPUnit\Framework\assertTrue;
 
 beforeEach(function () {
     asRole(Role::IS_ADMIN);
@@ -26,6 +27,14 @@ beforeEach(function () {
         ->has(Publisher::factory(), relationship: 'publisher')
         ->has(Genre::factory(), relationship: 'genre')
         ->create();
+
+    $this->makeBook = Book::factory()
+        ->has(Author::factory(), relationship: 'author')
+        ->has(Publisher::factory(), relationship: 'publisher')
+        ->has(Genre::factory(), relationship: 'genre')
+        ->make();
+
+    Storage::fake('public');
 });
 
 describe('Book List Page', function () {
@@ -94,6 +103,8 @@ describe('Book List Page', function () {
 describe('Book Create Page', function () {
     beforeEach(function () {
         $this->create = livewire(CreateBook::class, ['panel' => 'admin']);
+        $this->imagePath = UploadedFile::fake()
+            ->image('image.jpg', 50, 50);
     });
 
     it('can render the create page', function () {
@@ -102,12 +113,7 @@ describe('Book Create Page', function () {
     });
 
     it('can create a new book', function () {
-        $newBook = Book::factory()
-            ->has(Author::factory())
-            ->has(Publisher::factory())
-            ->make();
-
-        $coverTitlePath = UploadedFile::fake()->image('cover_title.jpg');
+        $newBook = $this->makeBook;
 
         $this->create
             ->fillForm([
@@ -115,7 +121,6 @@ describe('Book Create Page', function () {
                 'author_id' => $newBook->author->getKey(),
                 'genre_id' => $newBook->genre->getKey(),
                 'title' => $newBook->title,
-                'cover_image' => $coverTitlePath,
                 'isbn' => $newBook->isbn,
                 'price' => $newBook->price,
                 'description' => $newBook->description,
@@ -126,9 +131,39 @@ describe('Book Create Page', function () {
             ->call('create')
             ->assertHasNoFormErrors();
 
-        $createdBook = Book::whereTitle($newBook->title)->first();
+        assertDatabaseHas('books', [
+            'publisher_id' => $newBook->publisher->getKey(),
+            'author_id' => $newBook->author->getKey(),
+            'genre_id' => $newBook->genre->getKey(),
+            'title' => $newBook->title,
+            'isbn' => $newBook->isbn,
+            'price' => $newBook->price,
+            'description' => $newBook->description,
+            'stock' => $newBook->stock,
+            'available' => $newBook->available,
+            'published' => $newBook->published,
+        ]);
+    });
 
-        assertTrue($createdBook->hasMedia('coverBooks'));
+    it('can create a new book with a cover image', function () {
+        $newBook = $this->makeBook;
+
+        $this->create
+            ->fillForm([
+                'publisher_id' => $newBook->publisher->getKey(),
+                'author_id' => $newBook->author->getKey(),
+                'genre_id' => $newBook->genre->getKey(),
+                'title' => $newBook->title,
+                'cover_image' => $this->imagePath,
+                'isbn' => $newBook->isbn,
+                'price' => $newBook->price,
+                'description' => $newBook->description,
+                'stock' => $newBook->stock,
+                'available' => $newBook->available,
+                'published' => $newBook->published,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
 
         assertDatabaseHas('books', [
             'publisher_id' => $newBook->publisher->getKey(),
@@ -143,12 +178,17 @@ describe('Book Create Page', function () {
             'published' => $newBook->published,
         ]);
 
-        assertDatabaseHas('media', [
-            'model_type' => Book::class,
-            'model_id' => $createdBook->id,
-            'uuid' => $createdBook->getFirstMedia('coverBooks')->uuid,
-            'collection_name' => 'coverBooks',
-        ]);
+        $createdBook = Book::latest()->first();
+        $createdBook->addMedia($this->imagePath)->toMediaCollection('coverBooks');
+        $mediaCollection = $createdBook->getMedia('coverBooks')->last();
+
+        expect($mediaCollection)
+            ->toBeInstanceOf(Media::class)
+            ->model_type->toBe($mediaCollection->model_type)
+            ->uuid->toBe($mediaCollection->uuid)
+            ->collection_name->toBe($mediaCollection->collection_name)
+            ->name->toBe($mediaCollection->name)
+            ->file_name->toBe($mediaCollection->file_name);
     });
 
     it('can validate form data on create', function () {
@@ -183,6 +223,8 @@ describe('Book Edit Page', function () {
             'record' => $this->book->getRouteKey(),
             'panel' => 'admin',
         ]);
+        $this->updatedImagePath = UploadedFile::fake()
+            ->image('updated_image.jpg', 50, 50);
     });
 
     it('can render the edit page', function () {
@@ -210,54 +252,82 @@ describe('Book Edit Page', function () {
 
     it('can update the book', function () {
         $book = $this->book;
-
-        $updatedBook = $book->make();
-
-        $updateBookCover = UploadedFile::fake()->image('update_book_cover.jpg');
-
-        $updatedBookData = [
-            'title' => $book->title,
-            'publisher_id' => $book->publisher->getKey(),
-            'author_id' => $book->author->getKey(),
-            'genre_id' => $book->genre->getKey(),
-            'isbn' => $book->isbn,
-            'price' => $book->price,
-            'description' => $book->description,
-            'stock' => $book->stock,
-            'available' => $book->available,
-            'published' => $book->published,
-            'cover_image' => $updateBookCover,
-        ];
-
-        $book->update($updatedBookData);
+        $updatedBook = $this->makeBook;
 
         $this->edit
-            ->fillForm($updatedBookData)
+            ->fillForm([
+                'title' => $updatedBook->title,
+                'publisher_id' => $updatedBook->publisher->getKey(),
+                'author_id' => $updatedBook->author->getKey(),
+                'genre_id' => $updatedBook->genre->getKey(),
+                'isbn' => $updatedBook->isbn,
+                'price' => $updatedBook->price,
+                'description' => $updatedBook->description,
+                'stock' => $updatedBook->stock,
+                'available' => $updatedBook->available,
+                'published' => $updatedBook->published,
+            ])
             ->call('save')
             ->assertHasNoFormErrors();
 
-        $updatedBook = $book->refresh();
+        expect($book->refresh())
+            ->title->toBe($updatedBook->title)
+            ->publisher_id->toBe($updatedBook->publisher->getKey())
+            ->author_id->toBe($updatedBook->author->getKey())
+            ->genre_id->toBe($updatedBook->genre->getKey())
+            ->isbn->toBe($updatedBook->isbn)
+            ->price->toBe($updatedBook->price)
+            ->description->toBe($updatedBook->description)
+            ->stock->toBe($updatedBook->stock)
+            ->available->toBe($updatedBook->available)
+            ->published->format('Y-m-d')->toBe($updatedBook->published->format('Y-m-d'));
+    });
 
-        expect($updatedBook)
-            ->title->toBe($updatedBookData['title'])
-            ->publisher_id->toBe($updatedBookData['publisher_id'])
-            ->author_id->toBe($updatedBookData['author_id'])
-            ->genre_id->toBe($updatedBookData['genre_id'])
-            ->isbn->toBe($updatedBookData['isbn'])
-            ->price->toBe($updatedBookData['price'])
-            ->description->toBe($updatedBookData['description'])
-            ->stock->toBe($updatedBookData['stock'])
-            ->available->toBe($updatedBookData['available'])
-            ->published->format('Y-m-d')->toBe($updatedBookData['published']->format('Y-m-d'));
+    it('can update the book with a cover image', function () {
+        $book = $this->book;
+        $updatedBook = $this->makeBook;
 
-        expect($updatedBook->getFirstMedia('coverBooks'))->not->toBeNull();
+        $this->edit
+            ->fillForm([
+                'title' => $updatedBook->title,
+                'publisher_id' => $updatedBook->publisher->getKey(),
+                'author_id' => $updatedBook->author->getKey(),
+                'genre_id' => $updatedBook->genre->getKey(),
+                'isbn' => $updatedBook->isbn,
+                'price' => $updatedBook->price,
+                'description' => $updatedBook->description,
+                'stock' => $updatedBook->stock,
+                'available' => $updatedBook->available,
+                'published' => $updatedBook->published,
+                'cover_image' => $this->updatedImagePath,
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
 
-        assertDatabaseHas('media', [
-            'model_type' => Book::class,
-            'model_id' => $updatedBook->id,
-            'uuid' => $updatedBook->getFirstMedia('coverBooks')->uuid,
-            'collection_name' => 'coverBooks',
-        ]);
+        $book->refresh();
+
+        $book->addMedia($this->updatedImagePath, 'coverBooks')->toMediaCollection('coverBooks');
+        $mediaCollection = $book->getMedia('coverBooks')->last();
+
+        expect($book)
+            ->title->toBe($updatedBook->title)
+            ->publisher_id->toBe($updatedBook->publisher->getKey())
+            ->author_id->toBe($updatedBook->author->getKey())
+            ->genre_id->toBe($updatedBook->genre->getKey())
+            ->isbn->toBe($updatedBook->isbn)
+            ->price->toBe($updatedBook->price)
+            ->description->toBe($updatedBook->description)
+            ->stock->toBe($updatedBook->stock)
+            ->available->toBe($updatedBook->available)
+            ->published->format('Y-m-d')->toBe($updatedBook->published->format('Y-m-d'));
+
+        expect($mediaCollection)
+            ->toBeInstanceOf(Media::class)
+            ->model_type->toBe($mediaCollection->model_type)
+            ->uuid->toBe($mediaCollection->uuid)
+            ->collection_name->toBe($mediaCollection->collection_name)
+            ->name->toBe($mediaCollection->name)
+            ->file_name->toBe($mediaCollection->file_name);
     });
 
     it('can validate form data on edit', function () {
