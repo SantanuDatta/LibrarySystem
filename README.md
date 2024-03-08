@@ -29,15 +29,13 @@ This is a project designed to manage and maintain the records of books in a libr
 
 If you want to use my project first you can either download the zip file or you can clone it using the command to your designated location
 
-```
-bash
+```bash
 gh repo clone SantanuDatta/LibrarySystem
 ```
 
 Setup your environment
 
-```
-bash
+```bash
 cd LibrarySystem
 ```
 
