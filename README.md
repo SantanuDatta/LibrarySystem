@@ -30,13 +30,20 @@ This is a project designed to manage and maintain the records of books in a libr
 If you want to use my project first you can either download the zip file or you can clone it using the command to your designated location
 
 ```bash
-gh repo clone SantanuDatta/LibrarySystem
+git clone https://github.com/SantanuDatta/LibrarySystem.git
 ```
 
 Setup your environment
 
 ```bash
 cd LibrarySystem
+cp .env.example .env
+```
+
+Make sure to generate a new key in the `env` and make necessary changes
+
+```bash
+php artisan key:generate
 ```
 
 After create project, Run migration & seeder
@@ -53,3 +60,16 @@ php artisan migrate:fresh --seed
 ```
 
 Now you can access login with `/admin` path where once you enter the default login data is given to through which you can easily access the dashboard.
+
+## Plugins
+
+These are [Filament Plugins](https://filamentphp.com/plugins) that used for this project.
+
+| **Plugin**                                                                                          | **Author**                                          |
+| :-------------------------------------------------------------------------------------------------- | :-------------------------------------------------- |
+| [Filament Spatie Media Library](https://github.com/filamentphp/spatie-laravel-media-library-plugin) | [Filament Official](https://github.com/filamentphp) |
+| [Filament Spatie Settings](https://github.com/filamentphp/spatie-laravel-settings-plugin)           |
+
+## License
+
+Library Management System is provided under the [MIT License](LICENSE.md).
