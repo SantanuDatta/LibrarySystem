@@ -38,12 +38,19 @@ Setup your environment
 ```bash
 cd LibrarySystem
 cp .env.example .env
+composer install
 ```
 
 Make sure to generate a new key in the `env` and make necessary changes 
 
 ```bash
 php artisan key:generate
+```
+
+Generate Storage Link
+
+```bash
+php artisan storage:link
 ```
 
 After create project, Run migration & seeder
