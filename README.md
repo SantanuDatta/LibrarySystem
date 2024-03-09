@@ -40,7 +40,7 @@ cd LibrarySystem
 cp .env.example .env
 ```
 
-Make sure to generate a new key in the `env` and make necessary changes
+Make sure to generate a new key in the `env` and make necessary changes 
 
 ```bash
 php artisan key:generate
@@ -68,8 +68,8 @@ These are [Filament Plugins](https://filamentphp.com/plugins) that used for this
 | **Plugin**                                                                                          | **Author**                                          |
 | :-------------------------------------------------------------------------------------------------- | :-------------------------------------------------- |
 | [Filament Spatie Media Library](https://github.com/filamentphp/spatie-laravel-media-library-plugin) | [Filament Official](https://github.com/filamentphp) |
-| [Filament Spatie Settings](https://github.com/filamentphp/spatie-laravel-settings-plugin)           |
+| [Filament Spatie Settings](https://github.com/filamentphp/spatie-laravel-settings-plugin)           | [Filament Official](https://github.com/filamentphp) |
 
 ## License
 
-Library Management System is provided under the [MIT License](LICENSE.md).
+Library Management System is provided under the [MIT License](LICENSE).
