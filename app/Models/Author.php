@@ -39,14 +39,20 @@ class Author extends Model implements HasMedia
 
     public static function booted(): void
     {
-        static::creating(function ($model) {
-            $cacheKey = 'NavigationCount'.class_basename($model).$model->getTable();
-            Cache::flush($cacheKey);
+        parent::boot();
+
+        static::saving(function ($model) {
+            $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
+            if(Cache::has($cacheKey)) {
+                Cache::forget($cacheKey);
+            }
         });
 
         static::deleting(function ($model) {
-            $cacheKey = 'NavigationCount'.class_basename($model).$model->getTable();
-            Cache::flush($cacheKey);
+            $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
+            if(Cache::has($cacheKey)) {
+                Cache::forget($cacheKey);
+            }
         });
     }
 }

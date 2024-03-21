@@ -42,6 +42,10 @@ class AuthorResource extends Resource
 
     protected static int $globalSearchResultLimit = 20;
 
+    /**
+     * @param Author $record
+     * @return array
+     */
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [

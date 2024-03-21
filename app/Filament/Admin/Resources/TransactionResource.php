@@ -42,6 +42,10 @@ class TransactionResource extends Resource
 
     protected static ?int $globalSearchResultLimit = 20;
 
+    /**
+     * @param Transaction $record
+     * @return array
+     */
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
@@ -96,8 +100,8 @@ class TransactionResource extends Resource
                                             ->required(fn (string $context) => $context === 'edit')
                                             ->columnSpanFull(),
                                     ])->columns(2),
-                            ])->columnSpan(2),
-                        Group::make(['sm' => 2, 'md' => 2, 'xxl' => 5])
+                            ])->columnSpan(['sm' => 2, 'md' => 2, 'xxl' => 5]),
+                        Group::make()
                             ->schema([
                                 Section::make()
                                     ->schema([

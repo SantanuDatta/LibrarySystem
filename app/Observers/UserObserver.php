@@ -26,7 +26,7 @@ class UserObserver
             Notification::make()
                 ->title('New Borrower has been Registered')
                 ->body(
-                    $user->name, ' has been registered as a borrower. And is in the process to borrow a new book for few days'
+                    $user->name . ' has been registered as a borrower. And is in the process to borrow a new book for few days'
                 )
                 ->icon('heroicon-o-user')
                 ->success()

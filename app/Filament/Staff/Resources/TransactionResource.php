@@ -42,6 +42,10 @@ class TransactionResource extends Resource
 
     protected static ?int $globalSearchResultLimit = 20;
 
+    /**
+     * @param Transaction $record
+     * @return array
+     */
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [

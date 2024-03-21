@@ -91,23 +91,27 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 
     public static function booted(): void
     {
-        static::creating(function ($model) {
-            $cacheKey = 'NavigationCount'.class_basename($model).$model->getTable();
-            $borrowerKey = 'BorrowerCount'.class_basename($model).$model->getTable();
-            if ($cacheKey) {
-                Cache::flush($cacheKey);
-            } elseif ($borrowerKey) {
-                Cache::flush($borrowerKey);
+        parent::boot();
+
+        static::saving(function ($model) {
+            $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
+            if (Cache::has($cacheKey)) {
+                Cache::forget($cacheKey);
+            }
+            $borrowerKey = 'BorrowerCount_'.class_basename($model).$model->getTable();
+            if (Cache::has($borrowerKey)) {
+                Cache::forget($borrowerKey);
             }
         });
 
         static::deleting(function ($model) {
-            $cacheKey = 'NavigationCount'.class_basename($model).$model->getTable();
-            $borrowerKey = 'BorrowerCount'.class_basename($model).$model->getTable();
-            if ($cacheKey) {
-                Cache::flush($cacheKey);
-            } elseif ($borrowerKey) {
-                Cache::flush($borrowerKey);
+            $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
+            if (Cache::has($cacheKey)) {
+                Cache::forget($cacheKey);
+            }
+            $borrowerKey = 'BorrowerCount_'.class_basename($model).$model->getTable();
+            if (Cache::has($borrowerKey)) {
+                Cache::forget($borrowerKey);
             }
         });
     }

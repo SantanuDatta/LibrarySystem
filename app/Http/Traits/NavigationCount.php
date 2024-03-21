@@ -8,8 +8,8 @@ trait NavigationCount
 {
     public static function getNavigationItems(): array
     {
-        $cacheKey = 'NavigationCount'.class_basename(static::class);
-        $cachedCount = Cache::rememberForever($cacheKey, function () {
+        $cacheKey = 'NavigationCount_'.class_basename(static::class);
+        $cachedCount = Cache::remember($cacheKey, now()->addMinutes(5), function () {
             return static::getModel()::count();
         });
         [$navigationItem] = parent::getNavigationItems();

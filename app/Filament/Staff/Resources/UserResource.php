@@ -90,7 +90,8 @@ class UserResource extends Resource
                                             ]),
                                         Toggle::make('status'),
                                         Hidden::make('role_id')
-                                            ->default(Role::whereName('borrower')->pluck('id')->first()),
+                                            ->default(Role::whereName('borrower')
+                                                ->value('id')),
                                     ]),
                             ])->columnSpan(['sm' => 2, 'md' => 1, 'xxl' => 1]),
                     ]),
