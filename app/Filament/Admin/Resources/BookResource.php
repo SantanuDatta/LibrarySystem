@@ -82,6 +82,7 @@ class BookResource extends Resource
                                                     ->afterStateUpdated(fn (Set $set) => $set('author_id', null))
                                                     ->required(),
                                                 Select::make('author_id')
+                                                    ->label('Author')
                                                     ->options(fn (Get $get) => Author::where('publisher_id', $get('publisher_id'))
                                                         ->pluck('name', 'id'))
                                                     ->searchable()
