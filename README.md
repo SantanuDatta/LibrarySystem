@@ -41,7 +41,7 @@ cp .env.example .env
 composer install
 ```
 
-Make sure to generate a new key in the `env` and make necessary changes 
+Make sure to generate a new key in the `env` and make necessary changes
 
 ```bash
 php artisan key:generate
