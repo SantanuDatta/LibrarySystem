@@ -9,6 +9,7 @@ use App\Models\Publisher;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Policies\UserPolicy;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -33,5 +34,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Genre::class, UserPolicy::class);
         Gate::policy(Book::class, UserPolicy::class);
         Gate::policy(Transaction::class, UserPolicy::class);
+
+        Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
+        Model::preventAccessingMissingAttributes(! $this->app->isProduction());
     }
 }
