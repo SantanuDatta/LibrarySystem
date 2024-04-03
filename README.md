@@ -66,7 +66,7 @@ or
 php artisan migrate:fresh --seed
 ```
 
-Now you can access login with `/admin` path where once you enter the default login data is given to through which you can easily access the dashboard.
+Now you can access login with `/admin` path where once you enter the default login data is given through which you can easily access the dashboard.
 
 ## Plugins
 
