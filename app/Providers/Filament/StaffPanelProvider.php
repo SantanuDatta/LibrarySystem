@@ -52,7 +52,6 @@ class StaffPanelProvider extends PanelProvider
                 'primary' => Color::Emerald,
             ])
             ->globalSearchKeyBindings(['ctrl+k, command+k'])
-            ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Staff/Resources'), for: 'App\\Filament\\Staff\\Resources')
             ->discoverPages(in: app_path('Filament/Staff/Pages'), for: 'App\\Filament\\Staff\\Pages')
             ->pages([
