@@ -16,7 +16,7 @@
         "filament/widgets": "^3.2.63",
         "guzzlehttp/guzzle": "^7.8.1",
         "joshembling/image-optimizer": "^1.4.0",
-        "laravel/framework": "^11.2.0",
+        "laravel/framework": "^11.3.0",
         "laravel/sanctum": "^4.0.1",
         "laravel/tinker": "^2.9"
     },
