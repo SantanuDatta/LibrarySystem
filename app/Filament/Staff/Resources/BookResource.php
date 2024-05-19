@@ -139,8 +139,7 @@ class BookResource extends Resource
                                             ])
                                             ->optimize('webp')
                                             ->collection('coverBooks')
-                                            ->responsiveImages()
-                                            ->storeFileNamesIn('cover_image_file_names')
+                                            ->responsiveImages(true)
                                             ->deleteUploadedFileUsing(function ($file) {
                                                 Storage::disk('public')->delete($file);
                                             }),
