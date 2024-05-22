@@ -214,16 +214,24 @@ describe('Transaction Edit Page', function () {
         $transaction = $this->transaction;
         $updatedTransaction = $this->makeTransaction;
 
+        $borrowedDate = now();
+        $returnedDate = now()->addDays(15);
+        $borrowedFor = 10;
+
         $updatedTransactionData = [
             'book_id' => $transaction->book->getKey(),
             'user_id' => $transaction->user->getKey(),
-            'borrowed_date' => now(),
-            'borrowed_for' => 10,
+            'borrowed_date' => $borrowedDate,
+            'borrowed_for' => $borrowedFor,
             'status' => BorrowedStatus::Delayed,
-            'returned_date' => now()->addDays(15),
+            'returned_date' => $returnedDate,
         ];
 
-        $fine = ($updatedTransactionData['returned_date']->diffInDays($updatedTransactionData['borrowed_date']) - $updatedTransactionData['borrowed_for']) * 10;
+        $delayDate = abs($returnedDate->diffInDays($borrowedDate));
+
+        $delayedFor = $delayDate - $borrowedFor;
+
+        $fine =  intval($delayedFor) * 10;
 
         $updatedTransactionData['fine'] = $fine;
 

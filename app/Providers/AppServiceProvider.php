@@ -36,6 +36,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Transaction::class, UserPolicy::class);
 
         Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
-        Model::preventAccessingMissingAttributes(! $this->app->isProduction());
+        // Model::preventAccessingMissingAttributes(! $this->app->isProduction());
     }
 }
