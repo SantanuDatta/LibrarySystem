@@ -14,6 +14,8 @@ class GeneralSettings extends Settings
 
     public string $site_logoHeight;
 
+    public string $site_logoWidth;
+
     public ?string $site_favicon;
 
     public bool $site_active;

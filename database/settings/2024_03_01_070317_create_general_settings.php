@@ -10,6 +10,7 @@ return new class extends SettingsMigration
         $this->migrator->add('general.site_logo', null);
         $this->migrator->add('general.site_logo_dark', null);
         $this->migrator->add('general.site_logoHeight', '3rem');
+        $this->migrator->add('general.site_logoWidth', '16rem');
         $this->migrator->add('general.site_favicon', null);
         $this->migrator->add('general.site_active', true);
 

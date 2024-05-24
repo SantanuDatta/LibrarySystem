@@ -42,6 +42,7 @@ class ManageGeneral extends SettingsPage
                                                 false => 'Inactive',
                                             ])
                                             ->native(false),
+                                        TextInput::make('site_logoWidth'),
                                         TextInput::make('site_logoHeight'),
                                     ]),
                             ])->columnSpan(['sm' => 2, 'md' => 2, 'xxl' => 5]),
