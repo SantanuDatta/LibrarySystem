@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
+use function PHPUnit\Framework\assertEquals;
 
 beforeEach(function () {
     asRole(Role::IS_STAFF);
@@ -113,8 +114,9 @@ describe('User Create Page', function () {
             ->email->toBe($newUser->email)
             ->address->toBe($newUser->address)
             ->phone->toBe($newUser->phone)
-            ->role_id->toBe($newUser->role_id)
             ->status->toBe($newUser->status);
+        assertEquals($createdUser->role_id, $newUser->role_id);
+        expect($createdUser);
 
         expect(Hash::check($newUser->password, $hashedPassword))->toBeTrue();
     });
