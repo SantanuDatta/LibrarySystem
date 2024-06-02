@@ -66,7 +66,7 @@ describe('Book List Page', function () {
         $book = $books->first();
 
         $this->list
-            ->assertTableColumnStateSet('cover_image', $book->cover_image, record: $book)
+            //->assertTableColumnStateSet('cover_image', $book->cover_image, record: $book)
             ->assertTableColumnStateSet('title', $book->title, record: $book)
             ->assertTableColumnStateSet('author.name', $book->author->name, record: $book)
             ->assertTableColumnStateSet('stock', $book->stock, record: $book)

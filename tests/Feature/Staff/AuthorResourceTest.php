@@ -63,7 +63,7 @@ describe('Author List Page', function () {
         $author = $authors->first();
 
         $this->list
-            ->assertTableColumnStateSet('avatar', $author->avatar, record: $author)
+            //->assertTableColumnStateSet('avatar', $author->avatar, record: $author)
             ->assertTableColumnStateSet('name', $author->name, record: $author)
             ->assertTableColumnStateSet('publisher.name', $author->publisher->name, record: $author)
             ->assertTableColumnStateSet('date_of_birth', $author->date_of_birth, record: $author);

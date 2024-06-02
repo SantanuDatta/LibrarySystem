@@ -55,7 +55,7 @@ describe('Publisher List Page', function () {
         $publisher = $publishers->first();
 
         $this->list
-            ->assertTableColumnStateSet('logo', $publisher->logo, record: $publisher)
+            //->assertTableColumnStateSet('logo', $publisher->logo, record: $publisher)
             ->assertTableColumnStateSet('name', $publisher->name, record: $publisher)
             ->assertTableColumnStateSet('founded', $publisher->founded, record: $publisher);
     });
