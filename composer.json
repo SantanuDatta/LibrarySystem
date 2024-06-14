@@ -10,10 +10,10 @@
     "require": {
         "php": "^8.3",
         "barryvdh/laravel-ide-helper": "^3.0.0",
-        "filament/filament": "^3.2.86",
-        "filament/spatie-laravel-media-library-plugin": "^3.2.86",
-        "filament/spatie-laravel-settings-plugin": "^3.2.86",
-        "filament/widgets": "^3.2.86",
+        "filament/filament": "^3.2.90",
+        "filament/spatie-laravel-media-library-plugin": "^3.2.90",
+        "filament/spatie-laravel-settings-plugin": "^3.2.90",
+        "filament/widgets": "^3.2.90",
         "guzzlehttp/guzzle": "^7.8.1",
         "joshembling/image-optimizer": "^1.4.0",
         "laravel/framework": "^11.10.0",
@@ -28,7 +28,7 @@
         "laravel/sail": "^1.29.2",
         "mockery/mockery": "^1.6.12",
         "nunomaduro/collision": "^8.1.1",
-        "pestphp/pest": "^2.34.7",
+        "pestphp/pest": "^2.34.8",
         "pestphp/pest-plugin-laravel": "^2.4",
         "pestphp/pest-plugin-livewire": "^2.1"
     },
