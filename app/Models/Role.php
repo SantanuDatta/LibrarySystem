@@ -17,11 +17,11 @@ class Role extends Model
         'description',
     ];
 
-    public const IS_ADMIN = 1;
+    const IS_ADMIN = 'admin';
 
-    public const IS_STAFF = 2;
+    const IS_STAFF = 'staff';
 
-    public const IS_BORROWER = 3;
+    const IS_BORROWER = 'borrower';
 
     public function users(): HasMany
     {

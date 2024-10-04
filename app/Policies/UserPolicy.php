@@ -9,7 +9,7 @@ class UserPolicy
 {
     public function before(User $user)
     {
-        if ($user->role_id == Role::IS_ADMIN) {
+        if ($user->role->name === Role::IS_ADMIN) {
             return true;
         }
     }
@@ -19,7 +19,7 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->role_id == Role::IS_STAFF;
+        return $user->role->name === Role::IS_STAFF;
     }
 
     /**
@@ -27,7 +27,7 @@ class UserPolicy
      */
     public function view(User $user): bool
     {
-        return $user->role_id == Role::IS_STAFF;
+        return $user->role->name === Role::IS_STAFF;
     }
 
     /**
@@ -35,7 +35,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->role_id == Role::IS_STAFF;
+        return $user->role->name === Role::IS_STAFF;
     }
 
     /**
@@ -43,7 +43,7 @@ class UserPolicy
      */
     public function update(User $user): bool
     {
-        return $user->role_id == Role::IS_STAFF;
+        return $user->role->name === Role::IS_STAFF;
     }
 
     /**
