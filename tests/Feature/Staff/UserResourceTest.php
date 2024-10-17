@@ -17,12 +17,12 @@ beforeEach(function () {
     asRole(Role::IS_STAFF);
 
     $this->user = User::factory([
-        'role_id' => Role::IS_BORROWER,
+        'role_id' => Role::getId(Role::IS_BORROWER),
     ])
         ->create();
 
     $this->makeUser = User::factory([
-        'role_id' => Role::IS_BORROWER,
+        'role_id' => Role::getId(Role::IS_BORROWER),
     ])
         ->make();
 

@@ -11,6 +11,7 @@
 |
 */
 
+use App\Models\Role;
 use App\Models\User;
 
 use function Pest\Laravel\seed;
@@ -21,7 +22,7 @@ uses(
     Illuminate\Foundation\Testing\LazilyRefreshDatabase::class,
 )->beforeEach(function () {
     seed();
-})->in('Feature');
+})->in('Feature', 'Unit');
 
 /*
 |--------------------------------------------------------------------------
@@ -51,7 +52,8 @@ expect()->extend('toBeOne', function () {
 
 function asRole($role)
 {
-    $user = User::where('role_id', $role)->first();
+    $roleId = Role::getId($role);
+    $user = User::where('role_id', $roleId)->first();
 
     return test()->actingAs($user);
 }
