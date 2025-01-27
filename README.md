@@ -79,4 +79,4 @@ These are [Filament Plugins](https://filamentphp.com/plugins) that used for this
 
 ## License
 
-Library Management System is provided under the [MIT License](LICENSE).
+Library Management System is provided under the [AGPL-3.0 license](LICENSE).
