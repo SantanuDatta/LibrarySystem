@@ -2,18 +2,17 @@
 
 namespace App\Filament\Staff\Pages\Auth;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Component;
 use App\Models\Role;
-use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Hidden;
-use Filament\Forms\Form;
-use Filament\Pages\Auth\Register as BaseRegister;
 
-class Register extends BaseRegister
+class Register extends \Filament\Auth\Pages\Register
 {
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
         return $this->makeForm()
-            ->schema([
+            ->components([
                 $this->getNameFormComponent(),
                 $this->getEmailFormComponent(),
                 $this->getPasswordFormComponent(),

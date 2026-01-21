@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\BookResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Admin\Resources\BookResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -13,7 +14,7 @@ class ListBooks extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            CreateAction::make(),
         ];
     }
 }

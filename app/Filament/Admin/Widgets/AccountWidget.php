@@ -15,5 +15,5 @@ class AccountWidget extends BaseAccount
     /**
      * @var view-string
      */
-    protected static string $view = 'filament-panels::widgets.account-widget';
+    protected string $view = 'filament-panels::widgets.account-widget';
 }

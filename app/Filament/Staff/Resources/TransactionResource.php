@@ -2,6 +2,19 @@
 
 namespace App\Filament\Staff\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Staff\Resources\TransactionResource\Pages\ListTransactions;
+use App\Filament\Staff\Resources\TransactionResource\Pages\CreateTransaction;
+use App\Filament\Staff\Resources\TransactionResource\Pages\EditTransaction;
 use App\Enums\BorrowedStatus;
 use App\Filament\Staff\Resources\TransactionResource\Pages;
 use App\Http\Traits\NavigationCount;
@@ -9,20 +22,12 @@ use App\Models\Book;
 use App\Models\Transaction;
 use App\Models\User;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -34,9 +39,9 @@ class TransactionResource extends Resource
 
     protected static ?string $model = Transaction::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-credit-card';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-credit-card';
 
-    protected static ?string $navigationGroup = 'Books & Transactions';
+    protected static string | \UnitEnum | null $navigationGroup = 'Books & Transactions';
 
     protected static ?string $recordTitleAttribute = 'user.name';
 
@@ -55,10 +60,10 @@ class TransactionResource extends Resource
         ];
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Grid::make(3)
                     ->schema([
                         Group::make()
@@ -167,15 +172,15 @@ class TransactionResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
+            ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),
                     DeleteAction::make(),
                 ]),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -190,9 +195,9 @@ class TransactionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTransactions::route('/'),
-            'create' => Pages\CreateTransaction::route('/create'),
-            'edit' => Pages\EditTransaction::route('/{record}/edit'),
+            'index' => ListTransactions::route('/'),
+            'create' => CreateTransaction::route('/create'),
+            'edit' => EditTransaction::route('/{record}/edit'),
         ];
     }
 }

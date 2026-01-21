@@ -2,22 +2,25 @@
 
 namespace App\Filament\Admin\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Admin\Resources\PublisherResource\Pages\ListPublishers;
+use App\Filament\Admin\Resources\PublisherResource\Pages\CreatePublisher;
+use App\Filament\Admin\Resources\PublisherResource\Pages\EditPublisher;
 use App\Filament\Admin\Resources\PublisherResource\Pages;
 use App\Http\Traits\NavigationCount;
 use App\Models\Publisher;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -29,14 +32,14 @@ class PublisherResource extends Resource
 
     protected static ?string $model = Publisher::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-paper-airplane';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-paper-airplane';
 
-    protected static ?string $navigationGroup = 'Books & Transactions';
+    protected static string | \UnitEnum | null $navigationGroup = 'Books & Transactions';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Grid::make(3)
                     ->schema([
                         Group::make()
@@ -88,7 +91,7 @@ class PublisherResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
+            ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),
                     DeleteAction::make()
@@ -97,7 +100,7 @@ class PublisherResource extends Resource
                         }),
                 ]),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->before(function ($records) {
@@ -119,9 +122,9 @@ class PublisherResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPublishers::route('/'),
-            'create' => Pages\CreatePublisher::route('/create'),
-            'edit' => Pages\EditPublisher::route('/{record}/edit'),
+            'index' => ListPublishers::route('/'),
+            'create' => CreatePublisher::route('/create'),
+            'edit' => EditPublisher::route('/{record}/edit'),
         ];
     }
 }

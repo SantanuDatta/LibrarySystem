@@ -2,33 +2,33 @@
 
 namespace App\Filament\Admin\Pages;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
 use App\Settings\GeneralSettings;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Pages\SettingsPage;
 use Illuminate\Support\Facades\Storage;
 
 class ManageGeneral extends SettingsPage
 {
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
     protected static string $settings = GeneralSettings::class;
 
-    protected static ?string $navigationGroup = 'Settings';
+    protected static string | \UnitEnum | null $navigationGroup = 'Settings';
 
     protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationLabel = 'General Settings';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Grid::make(3)
                     ->schema([
                         Group::make()

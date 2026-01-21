@@ -8,9 +8,9 @@ use Filament\Widgets\ChartWidget;
 
 class TransactionChart extends ChartWidget
 {
-    protected static ?string $heading = 'Borrowed Book Status';
+    protected ?string $heading = 'Borrowed Book Status';
 
-    protected static ?string $pollingInterval = '300s';
+    protected ?string $pollingInterval = '300s';
 
     protected function getData(): array
     {

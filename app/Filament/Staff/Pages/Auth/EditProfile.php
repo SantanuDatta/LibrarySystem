@@ -2,20 +2,19 @@
 
 namespace App\Filament\Staff\Pages\Auth;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Component;
 use App\Models\User;
-use Filament\Forms\Components\Component;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Pages\Auth\EditProfile as BaseProfile;
 use Illuminate\Support\Facades\Storage;
 
-class EditProfile extends BaseProfile
+class EditProfile extends \Filament\Auth\Pages\EditProfile
 {
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
         return $this->makeForm()
-            ->schema([
+            ->components([
                 $this->getAvatarFormComponent(),
                 $this->getNameFormComponent(),
                 $this->getEmailFormComponent(),

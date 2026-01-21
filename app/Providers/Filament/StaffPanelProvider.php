@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Pages\Dashboard;
 use App\Filament\Staff\Pages\Auth\EditProfile;
 use App\Filament\Staff\Pages\Auth\Login;
 use App\Filament\Staff\Pages\Auth\Register;
@@ -55,7 +56,7 @@ class StaffPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Staff/Resources'), for: 'App\\Filament\\Staff\\Resources')
             ->discoverPages(in: app_path('Filament/Staff/Pages'), for: 'App\\Filament\\Staff\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Staff/Widgets'), for: 'App\\Filament\\Staff\\Widgets')
             ->widgets([

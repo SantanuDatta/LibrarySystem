@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Pages\Dashboard;
 use App\Filament\Admin\Pages\Auth\Login;
 use App\Settings\GeneralSettings;
 use Filament\Http\Middleware\Authenticate;
@@ -52,7 +53,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([

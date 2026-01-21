@@ -2,10 +2,10 @@
 
 namespace App\Filament\Staff\Pages\Auth;
 
-use Filament\Forms\Form;
-use Filament\Pages\Auth\Login as BaseLogin;
+use Filament\Schemas\Schema;
 
-class Login extends BaseLogin
+
+class Login extends \Filament\Auth\Pages\Login
 {
     public function mount(): void
     {
@@ -17,10 +17,10 @@ class Login extends BaseLogin
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 $this->getEmailFormComponent()->label('Email'),
                 $this->getPasswordFormComponent(),
                 $this->getRememberFormComponent(),

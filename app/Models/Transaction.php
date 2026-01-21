@@ -49,7 +49,7 @@ class Transaction extends Model
 
         static::saving(function ($transaction) {
             $borrowedDate = Carbon::parse($transaction->borrowed_date);
-            $borrowedFor = $transaction->borrowed_for;
+            $borrowedFor = (int) $transaction->borrowed_for;
             $returnDate = Carbon::parse($transaction->returned_date);
             $dueDate = $borrowedDate->addDays($borrowedFor);
             $delay = 0;

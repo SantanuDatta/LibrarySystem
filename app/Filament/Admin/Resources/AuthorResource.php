@@ -2,25 +2,28 @@
 
 namespace App\Filament\Admin\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Admin\Resources\AuthorResource\Pages\ListAuthors;
+use App\Filament\Admin\Resources\AuthorResource\Pages\CreateAuthor;
+use App\Filament\Admin\Resources\AuthorResource\Pages\EditAuthor;
 use App\Filament\Admin\Resources\AuthorResource\Pages;
 use App\Filament\Admin\Resources\AuthorResource\RelationManagers\BooksRelationManager;
 use App\Http\Traits\NavigationCount;
 use App\Models\Author;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Group;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -34,9 +37,9 @@ class AuthorResource extends Resource
 
     protected static ?string $model = Author::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-user-circle';
 
-    protected static ?string $navigationGroup = 'Books & Transactions';
+    protected static string | \UnitEnum | null $navigationGroup = 'Books & Transactions';
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -58,10 +61,10 @@ class AuthorResource extends Resource
         return parent::getGlobalSearchEloquentQuery()->with('publisher');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Grid::make(3)
                     ->schema([
                         Group::make()
@@ -131,7 +134,7 @@ class AuthorResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
+            ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),
                     DeleteAction::make()
@@ -140,7 +143,7 @@ class AuthorResource extends Resource
                         }),
                 ]),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->before(function ($records) {
@@ -162,9 +165,9 @@ class AuthorResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListAuthors::route('/'),
-            'create' => Pages\CreateAuthor::route('/create'),
-            'edit' => Pages\EditAuthor::route('/{record}/edit'),
+            'index' => ListAuthors::route('/'),
+            'create' => CreateAuthor::route('/create'),
+            'edit' => EditAuthor::route('/{record}/edit'),
         ];
     }
 }
