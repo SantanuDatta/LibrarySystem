@@ -2,24 +2,17 @@
 
 namespace App\Filament\Admin\Resources;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Group;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Admin\Resources\BookResource\Pages\ListBooks;
 use App\Filament\Admin\Resources\BookResource\Pages\CreateBook;
 use App\Filament\Admin\Resources\BookResource\Pages\EditBook;
-use App\Filament\Admin\Resources\BookResource\Pages;
+use App\Filament\Admin\Resources\BookResource\Pages\ListBooks;
 use App\Http\Traits\NavigationCount;
 use App\Models\Author;
 use App\Models\Book;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -27,6 +20,12 @@ use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Support\RawJs;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -41,17 +40,16 @@ class BookResource extends Resource
 
     protected static ?string $model = Book::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-book-open';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-book-open';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Books & Transactions';
+    protected static string|\UnitEnum|null $navigationGroup = 'Books & Transactions';
 
     protected static ?string $recordTitleAttribute = 'title';
 
     protected static ?int $globalSearchResultLimit = 20;
 
     /**
-     * @param Book $record
-     * @return array
+     * @param  Book  $record
      */
     public static function getGlobalSearchResultDetails(Model $record): array
     {
@@ -137,7 +135,7 @@ class BookResource extends Resource
                                             ->optimize('webp')
                                             ->collection('coverBooks')
                                             ->responsiveImages(true)
-                                            ->deleteUploadedFileUsing(function ($file) {
+                                            ->deleteUploadedFileUsing(function ($file): void {
                                                 Storage::disk('public')->delete($file);
                                             }),
                                     ]),
@@ -175,7 +173,7 @@ class BookResource extends Resource
                 ActionGroup::make([
                     EditAction::make(),
                     DeleteAction::make()
-                        ->before(function ($record) {
+                        ->before(function ($record): void {
                             Storage::disk('public')->delete($record);
                         }),
                 ]),
@@ -183,8 +181,8 @@ class BookResource extends Resource
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->before(function ($records) {
-                            $records->each(function ($record) {
+                        ->before(function ($records): void {
+                            $records->each(function ($record): void {
                                 Storage::disk('public')->delete($record);
                             });
                         }),

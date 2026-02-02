@@ -4,7 +4,6 @@ namespace App\Filament\Admin\Pages\Auth;
 
 use Filament\Schemas\Schema;
 
-
 class Login extends \Filament\Auth\Pages\Login
 {
     public function mount(): void

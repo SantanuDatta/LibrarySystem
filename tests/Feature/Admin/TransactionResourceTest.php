@@ -15,7 +15,7 @@ use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertModelMissing;
 use function Pest\Livewire\livewire;
 
-beforeEach(function () {
+beforeEach(function (): void {
     asRole(Role::IS_ADMIN);
 
     $this->user = User::factory([
@@ -39,8 +39,8 @@ beforeEach(function () {
         ->make();
 });
 
-describe('Relation check with the user', function () {
-    test('book is being borrowed by a user whose role is a borrower', function () {
+describe('Relation check with the user', function (): void {
+    test('book is being borrowed by a user whose role is a borrower', function (): void {
         $transaction = $this->transaction;
 
         expect($transaction->book)
@@ -53,20 +53,20 @@ describe('Relation check with the user', function () {
     });
 });
 
-describe('Transaction List Page', function () {
-    beforeEach(function () {
+describe('Transaction List Page', function (): void {
+    beforeEach(function (): void {
         $this->list = livewire(ListTransactions::class, [
             'record' => $this->transaction,
             'panel' => 'admin',
         ]);
     });
 
-    it('can render the list page', function () {
+    it('can render the list page', function (): void {
         $this->list
             ->assertSuccessful();
     });
 
-    it('has borrower name, borrowed book with date and the return date with status', function () {
+    it('has borrower name, borrowed book with date and the return date with status', function (): void {
         $expectedColumns = [
             'user.name',
             'book.title',
@@ -80,7 +80,7 @@ describe('Transaction List Page', function () {
         }
     });
 
-    it('can get borrower name, borrowed book with date and the return date with status', function () {
+    it('can get borrower name, borrowed book with date and the return date with status', function (): void {
         $transactions = $this->transaction;
         $transaction = $transactions->first();
 
@@ -92,27 +92,27 @@ describe('Transaction List Page', function () {
             ->assertTableColumnFormattedStateSet('status', $transaction->status->getLabel(), record: $transaction);
     });
 
-    it('can delete a transaction', function () {
+    it('can delete a transaction', function (): void {
         $this->list
             ->callTableAction(TableDeleteAction::class, $this->transaction);
         assertModelMissing($this->transaction);
     });
 });
 
-describe('Transaction Create Page', function () {
-    beforeEach(function () {
+describe('Transaction Create Page', function (): void {
+    beforeEach(function (): void {
         $this->create = livewire(CreateTransaction::class, [
             'record' => $this->transaction,
             'panel' => 'admin',
         ]);
     });
 
-    it('can render the create page', function () {
+    it('can render the create page', function (): void {
         $this->create
             ->assertSuccessful();
     });
 
-    it('can create a new transaction', function () {
+    it('can create a new transaction', function (): void {
         $newTransaction = $this->makeTransaction;
 
         $this->create
@@ -137,7 +137,7 @@ describe('Transaction Create Page', function () {
         ]);
     });
 
-    it('can validate form data on create', function () {
+    it('can validate form data on create', function (): void {
         $this->create
             ->fillForm([
                 'book_id' => null,
@@ -156,20 +156,20 @@ describe('Transaction Create Page', function () {
     });
 });
 
-describe('Transaction Edit Page', function () {
-    beforeEach(function () {
+describe('Transaction Edit Page', function (): void {
+    beforeEach(function (): void {
         $this->edit = livewire(EditTransaction::class, [
             'record' => $this->transaction->getRouteKey(),
             'panel' => 'admin',
         ]);
     });
 
-    it('can render the edit page', function () {
+    it('can render the edit page', function (): void {
         $this->edit
             ->assertSuccessful();
     });
 
-    it('can retrieve data', function () {
+    it('can retrieve data', function (): void {
         $transaction = $this->transaction;
 
         $this->edit
@@ -182,7 +182,7 @@ describe('Transaction Edit Page', function () {
             ]);
     });
 
-    it('can update the transaction when it is returned', function () {
+    it('can update the transaction when it is returned', function (): void {
         $transaction = $this->transaction;
         $updatedTransaction = $this->makeTransaction;
 
@@ -213,7 +213,7 @@ describe('Transaction Edit Page', function () {
             ->returned_date->format('Y-m-d')->toBe($updatedTransactionData['returned_date']->format('Y-m-d'));
     });
 
-    it('can update the transaction when it is delayed and fine is applied', function () {
+    it('can update the transaction when it is delayed and fine is applied', function (): void {
         $transaction = $this->transaction;
         $updatedTransaction = $this->makeTransaction;
 
@@ -234,7 +234,7 @@ describe('Transaction Edit Page', function () {
 
         $delayedFor = $delayDate - $borrowedFor;
 
-        $fine =  intval($delayedFor) * 10;
+        $fine = intval($delayedFor) * 10;
 
         $updatedTransactionData['fine'] = $fine;
 
@@ -257,7 +257,7 @@ describe('Transaction Edit Page', function () {
             ->fine->toBe($updatedTransactionData['fine']);
     });
 
-    it('can validate form data on edit', function () {
+    it('can validate form data on edit', function (): void {
         $this->transaction;
         $this->edit
             ->assertFormFieldIsVisible('returned_date')
@@ -278,7 +278,7 @@ describe('Transaction Edit Page', function () {
             ]);
     });
 
-    it('can delete a transaction from the edit page', function () {
+    it('can delete a transaction from the edit page', function (): void {
         $this->transaction;
 
         $this->edit

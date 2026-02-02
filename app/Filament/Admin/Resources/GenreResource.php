@@ -2,23 +2,21 @@
 
 namespace App\Filament\Admin\Resources;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Admin\Resources\GenreResource\Pages\ListGenres;
 use App\Filament\Admin\Resources\GenreResource\Pages\CreateGenre;
 use App\Filament\Admin\Resources\GenreResource\Pages\EditGenre;
-use App\Filament\Admin\Resources\GenreResource\Pages;
+use App\Filament\Admin\Resources\GenreResource\Pages\ListGenres;
 use App\Filament\Admin\Resources\GenreResource\RelationManagers\BooksRelationManager;
 use App\Models\Genre;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -27,9 +25,9 @@ class GenreResource extends Resource
 {
     protected static ?string $model = Genre::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-tag';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-tag';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Books & Transactions';
+    protected static string|\UnitEnum|null $navigationGroup = 'Books & Transactions';
 
     public static function form(Schema $schema): Schema
     {

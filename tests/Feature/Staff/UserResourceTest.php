@@ -13,7 +13,7 @@ use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 use function PHPUnit\Framework\assertEquals;
 
-beforeEach(function () {
+beforeEach(function (): void {
     asRole(Role::IS_STAFF);
 
     $this->user = User::factory([
@@ -29,20 +29,20 @@ beforeEach(function () {
     Storage::fake('public');
 });
 
-describe('User List Page', function () {
-    beforeEach(function () {
+describe('User List Page', function (): void {
+    beforeEach(function (): void {
         $this->list = livewire(ListUsers::class, [
             'record' => $this->user,
             'panel' => 'staff',
         ]);
     });
 
-    it('can render the list page', function () {
+    it('can render the list page', function (): void {
         $this->list
             ->assertSuccessful();
     });
 
-    it('has users avatar, name, email, role and status', function () {
+    it('has users avatar, name, email, role and status', function (): void {
         $expectedColumns = [
             'avatar_url',
             'name',
@@ -56,7 +56,7 @@ describe('User List Page', function () {
         }
     });
 
-    it('can get users avatar, name, email, role and status', function () {
+    it('can get users avatar, name, email, role and status', function (): void {
         $users = $this->user;
         $user = $users->first();
 
@@ -68,15 +68,15 @@ describe('User List Page', function () {
             ->assertTableColumnStateSet('status', $user->status, record: $user);
     });
 
-    it('can create a user but cannot delete it', function () {
+    it('can create a user but cannot delete it', function (): void {
         $this->list
             ->assertActionEnabled('create')
             ->assertTableActionDisabled('delete', record: $this->user);
     });
 });
 
-describe('User Create Page', function () {
-    beforeEach(function () {
+describe('User Create Page', function (): void {
+    beforeEach(function (): void {
         $this->create = livewire(CreateUser::class, [
             'panel' => 'staff',
         ]);
@@ -84,12 +84,12 @@ describe('User Create Page', function () {
             ->image('image.jpg', 50, 50);
     });
 
-    it('can render the create page', function () {
+    it('can render the create page', function (): void {
         $this->create
             ->assertSuccessful();
     });
 
-    it('can create a user', function () {
+    it('can create a user', function (): void {
         $newUser = $this->makeUser;
 
         $hashedPassword = Hash::make($newUser->password);
@@ -121,7 +121,7 @@ describe('User Create Page', function () {
         expect(Hash::check($newUser->password, $hashedPassword))->toBeTrue();
     });
 
-    it('can create a user with an avatar', function () {
+    it('can create a user with an avatar', function (): void {
         $newUser = $this->makeUser;
 
         $hashedPassword = Hash::make($newUser->password);
@@ -153,7 +153,7 @@ describe('User Create Page', function () {
         expect(Hash::check($newUser->password, $hashedPassword))->toBeTrue();
     });
 
-    it('can validate form data on create', function () {
+    it('can validate form data on create', function (): void {
         $this->create
             ->fillForm([
                 'name' => null,
@@ -171,8 +171,8 @@ describe('User Create Page', function () {
     });
 });
 
-describe('User Edit Page', function () {
-    beforeEach(function () {
+describe('User Edit Page', function (): void {
+    beforeEach(function (): void {
         $this->edit = livewire(EditUser::class, [
             'record' => $this->user->getRouteKey(),
             'panel' => 'staff',
@@ -181,12 +181,12 @@ describe('User Edit Page', function () {
             ->image('updated_image.jpg', 50, 50);
     });
 
-    it('can render the edit page', function () {
+    it('can render the edit page', function (): void {
         $this->edit
             ->assertSuccessful();
     });
 
-    it('can retrieve data', function () {
+    it('can retrieve data', function (): void {
         $user = $this->user;
 
         $this->edit
@@ -202,7 +202,7 @@ describe('User Edit Page', function () {
             ]);
     });
 
-    it('can update user', function () {
+    it('can update user', function (): void {
         $user = $this->user;
         $updatedUser = $this->makeUser;
 
@@ -231,7 +231,7 @@ describe('User Edit Page', function () {
         }
     });
 
-    it('can update user with an avatar', function () {
+    it('can update user with an avatar', function (): void {
         $user = $this->user;
 
         $updatedUser = $this->makeUser;
@@ -263,7 +263,7 @@ describe('User Edit Page', function () {
         }
     });
 
-    it('can validate form data on edit', function () {
+    it('can validate form data on edit', function (): void {
         $this->user;
 
         $this->edit
@@ -278,7 +278,7 @@ describe('User Edit Page', function () {
             ]);
     });
 
-    it('can not delete the user from edit page', function () {
+    it('can not delete the user from edit page', function (): void {
         $this->user;
 
         $this->edit

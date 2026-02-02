@@ -13,7 +13,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 
-beforeEach(function () {
+beforeEach(function (): void {
     asRole(Role::IS_STAFF);
 
     $this->publisher = Publisher::factory()->create();
@@ -23,20 +23,20 @@ beforeEach(function () {
     Storage::fake('public');
 });
 
-describe('Publisher List Page', function () {
-    beforeEach(function () {
+describe('Publisher List Page', function (): void {
+    beforeEach(function (): void {
         $this->list = livewire(ListPublishers::class, [
             'record' => $this->publisher,
             'panel' => 'staff',
         ]);
     });
 
-    it('can render the list page', function () {
+    it('can render the list page', function (): void {
         $this->list
             ->assertSuccessful();
     });
 
-    it('can render publisher logo, name and founded', function () {
+    it('can render publisher logo, name and founded', function (): void {
         $expectedColumns = [
             'logo',
             'name',
@@ -50,25 +50,25 @@ describe('Publisher List Page', function () {
         }
     });
 
-    it('can get publisher logo, name and founded', function () {
+    it('can get publisher logo, name and founded', function (): void {
         $publishers = $this->publisher;
         $publisher = $publishers->first();
 
         $this->list
-            //->assertTableColumnStateSet('logo', $publisher->logo, record: $publisher)
+            // ->assertTableColumnStateSet('logo', $publisher->logo, record: $publisher)
             ->assertTableColumnStateSet('name', $publisher->name, record: $publisher)
             ->assertTableColumnStateSet('founded', $publisher->founded, record: $publisher);
     });
 
-    it('can create a publisher but can not delete it', function () {
+    it('can create a publisher but can not delete it', function (): void {
         $this->list
             ->assertActionEnabled('create')
             ->assertTableActionDisabled('delete', $this->publisher);
     });
 });
 
-describe('Publisher Create Page', function () {
-    beforeEach(function () {
+describe('Publisher Create Page', function (): void {
+    beforeEach(function (): void {
         $this->create = livewire(CreatePublisher::class, [
             'panel' => 'staff',
         ]);
@@ -76,12 +76,12 @@ describe('Publisher Create Page', function () {
             ->image('image.jpg', 50, 50);
     });
 
-    it('can render the create page', function () {
+    it('can render the create page', function (): void {
         $this->create
             ->assertSuccessful();
     });
 
-    it('can create a new publisher', function () {
+    it('can create a new publisher', function (): void {
         $newPublisher = $this->makePublisher;
 
         $this->create
@@ -98,7 +98,7 @@ describe('Publisher Create Page', function () {
         ]);
     });
 
-    it('can create a new publisher with a logo', function () {
+    it('can create a new publisher with a logo', function (): void {
         $newPublisher = $this->makePublisher;
 
         $this->create
@@ -128,7 +128,7 @@ describe('Publisher Create Page', function () {
             ->file_name->toBe($mediaCollection->file_name);
     });
 
-    it('can validate form data on create', function () {
+    it('can validate form data on create', function (): void {
         $this->create
             ->fillForm([
                 'name' => null,
@@ -142,8 +142,8 @@ describe('Publisher Create Page', function () {
     });
 });
 
-describe('Publisher Edit Page', function () {
-    beforeEach(function () {
+describe('Publisher Edit Page', function (): void {
+    beforeEach(function (): void {
         $this->edit = livewire(EditPublisher::class, [
             'record' => $this->publisher->getRouteKey(),
             'panel' => 'staff',
@@ -152,12 +152,12 @@ describe('Publisher Edit Page', function () {
             ->image('updated_image.jpg', 50, 50);
     });
 
-    it('can render the edit page', function () {
+    it('can render the edit page', function (): void {
         $this->edit
             ->assertSuccessful();
     });
 
-    it('can edit a publisher', function () {
+    it('can edit a publisher', function (): void {
         $publisher = $this->publisher;
         $updatedPublisher = $this->makePublisher;
 
@@ -174,7 +174,7 @@ describe('Publisher Edit Page', function () {
             ->founded->format('Y-m-d')->toBe($updatedPublisher->founded->format('Y-m-d'));
     });
 
-    it('can edit a publisher with a logo', function () {
+    it('can edit a publisher with a logo', function (): void {
         $publisher = $this->publisher;
         $updatedPublisher = $this->makePublisher;
 
@@ -204,7 +204,7 @@ describe('Publisher Edit Page', function () {
             ->file_name->toBe($mediaCollection->file_name);
     });
 
-    it('can validate form data on edit', function () {
+    it('can validate form data on edit', function (): void {
         Publisher::factory()
             ->create();
         $this->edit
@@ -219,7 +219,7 @@ describe('Publisher Edit Page', function () {
             ]);
     });
 
-    it('can not delete a publisher from the edit page', function () {
+    it('can not delete a publisher from the edit page', function (): void {
         $this->publisher;
 
         $this->edit

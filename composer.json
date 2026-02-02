@@ -16,7 +16,6 @@
         "filament/widgets": "^5.0",
         "guzzlehttp/guzzle": "^7.10.0",
         "laravel/framework": "^12.48.1",
-        "laravel/sanctum": "^4.2.4",
         "laravel/tinker": "^2.11"
     },
     "require-dev": {

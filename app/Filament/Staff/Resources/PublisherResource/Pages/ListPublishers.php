@@ -2,9 +2,8 @@
 
 namespace App\Filament\Staff\Resources\PublisherResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Staff\Resources\PublisherResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListPublishers extends ListRecords

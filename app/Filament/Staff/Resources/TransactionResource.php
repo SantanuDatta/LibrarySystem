@@ -2,32 +2,30 @@
 
 namespace App\Filament\Staff\Resources;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Group;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Staff\Resources\TransactionResource\Pages\ListTransactions;
+use App\Enums\BorrowedStatus;
 use App\Filament\Staff\Resources\TransactionResource\Pages\CreateTransaction;
 use App\Filament\Staff\Resources\TransactionResource\Pages\EditTransaction;
-use App\Enums\BorrowedStatus;
-use App\Filament\Staff\Resources\TransactionResource\Pages;
+use App\Filament\Staff\Resources\TransactionResource\Pages\ListTransactions;
 use App\Http\Traits\NavigationCount;
 use App\Models\Book;
 use App\Models\Transaction;
 use App\Models\User;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -39,17 +37,16 @@ class TransactionResource extends Resource
 
     protected static ?string $model = Transaction::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-credit-card';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-credit-card';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Books & Transactions';
+    protected static string|\UnitEnum|null $navigationGroup = 'Books & Transactions';
 
     protected static ?string $recordTitleAttribute = 'user.name';
 
     protected static ?int $globalSearchResultLimit = 20;
 
     /**
-     * @param Transaction $record
-     * @return array
+     * @param  Transaction  $record
      */
     public static function getGlobalSearchResultDetails(Model $record): array
     {

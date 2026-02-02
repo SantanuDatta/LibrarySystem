@@ -47,7 +47,7 @@ class Transaction extends Model
     {
         parent::boot();
 
-        static::saving(function ($transaction) {
+        static::saving(function ($transaction): void {
             $borrowedDate = Carbon::parse($transaction->borrowed_date);
             $borrowedFor = (int) $transaction->borrowed_for;
             $returnDate = Carbon::parse($transaction->returned_date);
@@ -61,16 +61,16 @@ class Transaction extends Model
             $transaction->fine = $fine;
         });
 
-        static::created(function ($model) {
+        static::created(function ($model): void {
             $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
-            if(Cache::has($cacheKey)) {
+            if (Cache::has($cacheKey)) {
                 Cache::forget($cacheKey);
             }
         });
 
-        static::deleted(function ($model) {
+        static::deleted(function ($model): void {
             $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
-            if(Cache::has($cacheKey)) {
+            if (Cache::has($cacheKey)) {
                 Cache::forget($cacheKey);
             }
         });

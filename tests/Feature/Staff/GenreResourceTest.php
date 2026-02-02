@@ -12,7 +12,7 @@ use Filament\Actions\DeleteAction;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 
-beforeEach(function () {
+beforeEach(function (): void {
     asRole(Role::IS_STAFF);
 
     $this->genre = Genre::factory()->create();
@@ -20,19 +20,19 @@ beforeEach(function () {
     $this->makeGenre = Genre::factory()->make();
 });
 
-describe('Genre List Page', function () {
-    beforeEach(function () {
+describe('Genre List Page', function (): void {
+    beforeEach(function (): void {
         $this->list = livewire(ListGenres::class, [
             'record' => $this->genre,
             'panel' => 'staff',
         ]);
     });
-    it('can render the index', function () {
+    it('can render the index', function (): void {
         $this->list
             ->assertSuccessful();
     });
 
-    it('can render genre name, bg color and text color', function () {
+    it('can render genre name, bg color and text color', function (): void {
         $expectedColumns = [
             'name',
             'bg_color',
@@ -46,7 +46,7 @@ describe('Genre List Page', function () {
         }
     });
 
-    it('can get genre name, bg color and text color', function () {
+    it('can get genre name, bg color and text color', function (): void {
         $genres = $this->genre;
         $genre = $genres->first();
 
@@ -56,26 +56,26 @@ describe('Genre List Page', function () {
             ->assertTableColumnStateSet('text_color', $genre->text_color, record: $genre);
     });
 
-    it('can create a genre but can not delete it', function () {
+    it('can create a genre but can not delete it', function (): void {
         $this->list
             ->assertActionEnabled('create')
             ->assertTableActionDisabled('delete', $this->genre);
     });
 });
 
-describe('Genre Create Page', function () {
-    beforeEach(function () {
+describe('Genre Create Page', function (): void {
+    beforeEach(function (): void {
         $this->create = livewire(CreateGenre::class, [
             'panel' => 'staff',
         ]);
     });
 
-    it('can render the create page', function () {
+    it('can render the create page', function (): void {
         $this->create
             ->assertSuccessful();
     });
 
-    it('can create a new genre', function () {
+    it('can create a new genre', function (): void {
         $newGenre = $this->makeGenre;
         $this->create
             ->fillForm([
@@ -93,7 +93,7 @@ describe('Genre Create Page', function () {
         ]);
     });
 
-    it('can validate form data on create', function () {
+    it('can validate form data on create', function (): void {
         $this->create
             ->fillForm([
                 'name' => null,
@@ -105,20 +105,20 @@ describe('Genre Create Page', function () {
     });
 });
 
-describe('Genre Edit Page', function () {
-    beforeEach(function () {
+describe('Genre Edit Page', function (): void {
+    beforeEach(function (): void {
         $this->edit = livewire(EditGenre::class, [
             'record' => $this->genre->getRouteKey(),
             'panel' => 'staff',
         ]);
     });
 
-    it('can render the edit page', function () {
+    it('can render the edit page', function (): void {
         $this->edit
             ->assertSuccessful();
     });
 
-    it('can update a genre', function () {
+    it('can update a genre', function (): void {
         $genre = $this->genre;
         $updatedGenre = $this->makeGenre;
 
@@ -137,7 +137,7 @@ describe('Genre Edit Page', function () {
             ->text_color->toBe($updatedGenre->text_color);
     });
 
-    it('can validate form data on update', function () {
+    it('can validate form data on update', function (): void {
         Genre::factory()
             ->create();
 
@@ -151,7 +151,7 @@ describe('Genre Edit Page', function () {
             ]);
     });
 
-    it('can render a relation manager with books', function () {
+    it('can render a relation manager with books', function (): void {
         $author = Genre::factory()
             ->has(Book::factory()->count(10))
             ->create();
@@ -162,7 +162,7 @@ describe('Genre Edit Page', function () {
         ])->assertSuccessful();
     });
 
-    it('can not delete a genre from the edit page', function () {
+    it('can not delete a genre from the edit page', function (): void {
         $this->genre;
 
         $this->edit

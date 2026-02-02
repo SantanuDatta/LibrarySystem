@@ -19,7 +19,7 @@ use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Laravel\assertModelMissing;
 use function Pest\Livewire\livewire;
 
-beforeEach(function () {
+beforeEach(function (): void {
     asRole(Role::IS_ADMIN);
 
     $this->book = Book::factory()
@@ -37,20 +37,20 @@ beforeEach(function () {
     Storage::fake('public');
 });
 
-describe('Book List Page', function () {
-    beforeEach(function () {
+describe('Book List Page', function (): void {
+    beforeEach(function (): void {
         $this->list = livewire(ListBooks::class, [
             'record' => $this->book,
             'panel' => 'admin',
         ]);
     });
 
-    it('can render the list page', function () {
+    it('can render the list page', function (): void {
         $this->list
             ->assertSuccessful();
     });
 
-    it('has cover image, title, author, stock and availability column', function () {
+    it('has cover image, title, author, stock and availability column', function (): void {
         $expectedColumns = [
             'cover_image',
             'title',
@@ -64,25 +64,25 @@ describe('Book List Page', function () {
         }
     });
 
-    it('can get books cover image, title, author, stock and availability', function () {
+    it('can get books cover image, title, author, stock and availability', function (): void {
         $books = $this->book;
         $book = $books->first();
 
         $this->list
-            //->assertTableColumnStateSet('cover_image', $book->cover_image, record: $book)
+            // ->assertTableColumnStateSet('cover_image', $book->cover_image, record: $book)
             ->assertTableColumnStateSet('title', $book->title, record: $book)
             ->assertTableColumnStateSet('author.name', $book->author->name, record: $book)
             ->assertTableColumnStateSet('stock', $book->stock, record: $book)
             ->assertTableColumnStateSet('available', $book->available, record: $book);
     });
 
-    it('can delete a book without a cover', function () {
+    it('can delete a book without a cover', function (): void {
         $this->list
             ->callTableAction(TableDeleteAction::class, $this->book);
         assertModelMissing($this->book);
     });
 
-    it('can delete a book with cover', function () {
+    it('can delete a book with cover', function (): void {
         $book = $this->book->getFirstMedia('coverBooks');
 
         $this->list
@@ -100,19 +100,19 @@ describe('Book List Page', function () {
     });
 });
 
-describe('Book Create Page', function () {
-    beforeEach(function () {
+describe('Book Create Page', function (): void {
+    beforeEach(function (): void {
         $this->create = livewire(CreateBook::class, ['panel' => 'admin']);
         $this->imagePath = UploadedFile::fake()
             ->image('image.jpg', 50, 50);
     });
 
-    it('can render the create page', function () {
+    it('can render the create page', function (): void {
         $this->create
             ->assertSuccessful();
     });
 
-    it('can create a new book', function () {
+    it('can create a new book', function (): void {
         $newBook = $this->makeBook;
 
         $this->create
@@ -145,7 +145,7 @@ describe('Book Create Page', function () {
         ]);
     });
 
-    it('can create a new book with a cover image', function () {
+    it('can create a new book with a cover image', function (): void {
         $newBook = $this->makeBook;
 
         $this->create
@@ -191,7 +191,7 @@ describe('Book Create Page', function () {
             ->file_name->toBe($mediaCollection->file_name);
     });
 
-    it('can validate form data on create', function () {
+    it('can validate form data on create', function (): void {
         $this->create
             ->fillForm([
                 'title' => null,
@@ -217,8 +217,8 @@ describe('Book Create Page', function () {
     });
 });
 
-describe('Book Edit Page', function () {
-    beforeEach(function () {
+describe('Book Edit Page', function (): void {
+    beforeEach(function (): void {
         $this->edit = livewire(EditBook::class, [
             'record' => $this->book->getRouteKey(),
             'panel' => 'admin',
@@ -227,12 +227,12 @@ describe('Book Edit Page', function () {
             ->image('updated_image.jpg', 50, 50);
     });
 
-    it('can render the edit page', function () {
+    it('can render the edit page', function (): void {
         $this->edit
             ->assertSuccessful();
     });
 
-    it('can retrieve data', function () {
+    it('can retrieve data', function (): void {
         $book = $this->book;
 
         $this->edit
@@ -250,7 +250,7 @@ describe('Book Edit Page', function () {
             ]);
     });
 
-    it('can update the book', function () {
+    it('can update the book', function (): void {
         $book = $this->book;
         $updatedBook = $this->makeBook;
 
@@ -283,7 +283,7 @@ describe('Book Edit Page', function () {
             ->published->format('Y-m-d')->toBe($updatedBook->published->format('Y-m-d'));
     });
 
-    it('can update the book with a cover image', function () {
+    it('can update the book with a cover image', function (): void {
         $book = $this->book;
         $updatedBook = $this->makeBook;
 
@@ -330,7 +330,7 @@ describe('Book Edit Page', function () {
             ->file_name->toBe($mediaCollection->file_name);
     });
 
-    it('can validate form data on edit', function () {
+    it('can validate form data on edit', function (): void {
         Book::factory()
             ->has(Author::factory(), relationship: 'author')
             ->has(Publisher::factory(), relationship: 'publisher')
@@ -361,7 +361,7 @@ describe('Book Edit Page', function () {
             ]);
     });
 
-    it('can delete a book from the edit page without a cover', function () {
+    it('can delete a book from the edit page without a cover', function (): void {
         $this->book;
 
         $this->edit
@@ -370,7 +370,7 @@ describe('Book Edit Page', function () {
         assertModelMissing($this->book);
     });
 
-    it('can delete a book from the edit page with a cover', function () {
+    it('can delete a book from the edit page with a cover', function (): void {
         $book = $this->book->getFirstMedia('coverBooks');
 
         $this->edit

@@ -16,7 +16,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 
-beforeEach(function () {
+beforeEach(function (): void {
     asRole(Role::IS_STAFF);
 
     $this->author = Author::factory()
@@ -30,20 +30,20 @@ beforeEach(function () {
     Storage::fake('public');
 });
 
-describe('Author List Page', function () {
-    beforeEach(function () {
+describe('Author List Page', function (): void {
+    beforeEach(function (): void {
         $this->list = livewire(ListAuthors::class, [
             'record' => $this->author,
             'panel' => 'staff',
         ]);
     });
 
-    it('can render the list page', function () {
+    it('can render the list page', function (): void {
         $this->list
             ->assertSuccessful();
     });
 
-    it('can render author avatar, name, publisher and date of birth columns', function () {
+    it('can render author avatar, name, publisher and date of birth columns', function (): void {
         $expectedColumns = [
             'avatar',
             'name',
@@ -58,37 +58,37 @@ describe('Author List Page', function () {
         }
     });
 
-    it('can get authors avatar, name, publisher and date of birth', function () {
+    it('can get authors avatar, name, publisher and date of birth', function (): void {
         $authors = $this->author;
         $author = $authors->first();
 
         $this->list
-            //->assertTableColumnStateSet('avatar', $author->avatar, record: $author)
+            // ->assertTableColumnStateSet('avatar', $author->avatar, record: $author)
             ->assertTableColumnStateSet('name', $author->name, record: $author)
             ->assertTableColumnStateSet('publisher.name', $author->publisher->name, record: $author)
             ->assertTableColumnStateSet('date_of_birth', $author->date_of_birth, record: $author);
     });
 
-    it('can create a new author but can not delete an author', function () {
+    it('can create a new author but can not delete an author', function (): void {
         $this->list
             ->assertActionEnabled('create')
             ->assertTableActionDisabled('delete', $this->author);
     });
 });
 
-describe('Author Create Page', function () {
-    beforeEach(function () {
+describe('Author Create Page', function (): void {
+    beforeEach(function (): void {
         $this->create = livewire(CreateAuthor::class, ['panel' => 'staff']);
         $this->imagePath = UploadedFile::fake()
             ->image('image.jpg', 50, 50);
     });
 
-    it('can render the create page', function () {
+    it('can render the create page', function (): void {
         $this->create
             ->assertSuccessful();
     });
 
-    it('can create an author', function () {
+    it('can create an author', function (): void {
         $newAuthor = $this->makeAuthor;
 
         $this->create
@@ -109,7 +109,7 @@ describe('Author Create Page', function () {
         ]);
     });
 
-    it('can create a new author with an avatar', function () {
+    it('can create a new author with an avatar', function (): void {
         $newAuthor = $this->makeAuthor;
 
         $this->create
@@ -143,7 +143,7 @@ describe('Author Create Page', function () {
             ->file_name->toBe($mediaCollection->file_name);
     });
 
-    it('can validate form data on create', function () {
+    it('can validate form data on create', function (): void {
         $this->create
             ->fillForm([
                 'name' => null,
@@ -159,8 +159,8 @@ describe('Author Create Page', function () {
     });
 });
 
-describe('Author Edit Page', function () {
-    beforeEach(function () {
+describe('Author Edit Page', function (): void {
+    beforeEach(function (): void {
         $this->edit = livewire(EditAuthor::class, [
             'record' => $this->author->getRouteKey(),
             'panel' => 'staff',
@@ -169,12 +169,12 @@ describe('Author Edit Page', function () {
             ->image('updated_image.jpg', 50, 50);
     });
 
-    it('can render the edit page', function () {
+    it('can render the edit page', function (): void {
         $this->edit
             ->assertSuccessful();
     });
 
-    it('can update an author', function () {
+    it('can update an author', function (): void {
         $author = $this->author;
         $updatedAuthor = $this->makeAuthor;
 
@@ -195,7 +195,7 @@ describe('Author Edit Page', function () {
             ->bio->toBe($author->bio);
     });
 
-    it('can update an author with an avatar', function () {
+    it('can update an author with an avatar', function (): void {
         $author = $this->author;
         $updatedAuthor = $this->makeAuthor;
 
@@ -230,7 +230,7 @@ describe('Author Edit Page', function () {
             ->file_name->toBe($mediaCollection->file_name);
     });
 
-    it('can validate form data on edit', function () {
+    it('can validate form data on edit', function (): void {
         Author::factory()
             ->has(Publisher::factory(), relationship: 'publisher')
             ->create();
@@ -248,7 +248,7 @@ describe('Author Edit Page', function () {
             ]);
     });
 
-    it('can render a relation manager with books', function () {
+    it('can render a relation manager with books', function (): void {
         $author = Author::factory()
             ->has(Publisher::factory(), relationship: 'publisher')
             ->has(Book::factory()->count(10))
@@ -260,7 +260,7 @@ describe('Author Edit Page', function () {
         ])->assertSuccessful();
     });
 
-    it('can not delete an author from the edit page', function () {
+    it('can not delete an author from the edit page', function (): void {
         $this->author;
 
         $this->edit

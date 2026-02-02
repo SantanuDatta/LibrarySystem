@@ -2,10 +2,10 @@
 
 namespace App\Filament\Staff\Pages\Auth;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Component;
 use App\Models\Role;
 use Filament\Forms\Components\Hidden;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Schema;
 
 class Register extends \Filament\Auth\Pages\Register
 {

@@ -2,25 +2,24 @@
 
 namespace App\Filament\Staff\Resources;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Group;
-use Filament\Schemas\Components\Section;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Staff\Resources\PublisherResource\Pages\ListPublishers;
 use App\Filament\Staff\Resources\PublisherResource\Pages\CreatePublisher;
 use App\Filament\Staff\Resources\PublisherResource\Pages\EditPublisher;
-use App\Filament\Staff\Resources\PublisherResource\Pages;
+use App\Filament\Staff\Resources\PublisherResource\Pages\ListPublishers;
 use App\Http\Traits\NavigationCount;
 use App\Models\Publisher;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -32,9 +31,9 @@ class PublisherResource extends Resource
 
     protected static ?string $model = Publisher::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-paper-airplane';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-paper-airplane';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Books & Transactions';
+    protected static string|\UnitEnum|null $navigationGroup = 'Books & Transactions';
 
     public static function form(Schema $schema): Schema
     {
@@ -62,7 +61,7 @@ class PublisherResource extends Resource
                                             ->image()
                                             ->imageEditor()
                                             ->collection('publishers')
-                                            ->deleteUploadedFileUsing(function ($file) {
+                                            ->deleteUploadedFileUsing(function ($file): void {
                                                 Storage::disk('public')->delete($file);
                                             })
                                             ->extraAttributes([
@@ -95,7 +94,7 @@ class PublisherResource extends Resource
                 ActionGroup::make([
                     EditAction::make(),
                     DeleteAction::make()
-                        ->before(function ($record) {
+                        ->before(function ($record): void {
                             Storage::disk('public')->delete($record);
                         }),
                 ]),
@@ -103,8 +102,8 @@ class PublisherResource extends Resource
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->before(function ($records) {
-                            $records->each(function ($record) {
+                        ->before(function ($records): void {
+                            $records->each(function ($record): void {
                                 Storage::disk('public')->delete($record);
                             });
                         }),

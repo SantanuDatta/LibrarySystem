@@ -15,12 +15,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
-use Laravel\Sanctum\HasApiTokens;
 
 #[ObservedBy(UserObserver::class)]
 class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
-    use HasApiTokens;
     use HasFactory;
     use Notifiable;
 
@@ -79,7 +77,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 
     public function getFilamentAvatarUrl(): ?string
     {
-        $uiAvatarsProvider = new UiAvatarsProvider();
+        $uiAvatarsProvider = new UiAvatarsProvider;
 
         if ($this->avatar_url) {
             return Storage::url($this->avatar_url);
@@ -93,7 +91,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         parent::boot();
 
-        static::created(function ($model) {
+        static::created(function ($model): void {
             $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
             if (Cache::has($cacheKey)) {
                 Cache::forget($cacheKey);
@@ -104,7 +102,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
             }
         });
 
-        static::deleted(function ($model) {
+        static::deleted(function ($model): void {
             $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
             if (Cache::has($cacheKey)) {
                 Cache::forget($cacheKey);

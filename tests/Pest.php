@@ -20,7 +20,7 @@ uses(
     Tests\TestCase::class,
     // Illuminate\Foundation\Testing\RefreshDatabase::class,
     Illuminate\Foundation\Testing\LazilyRefreshDatabase::class,
-)->beforeEach(function () {
+)->beforeEach(function (): void {
     seed();
 })->in('Feature', 'Unit');
 

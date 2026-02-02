@@ -2,19 +2,13 @@
 
 namespace App\Filament\Admin\Resources\AuthorResource\RelationManagers;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Group;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Actions\CreateAction;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use App\Models\Author;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -22,6 +16,12 @@ use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Support\RawJs;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -101,7 +101,7 @@ class BooksRelationManager extends RelationManager
                                             ->collection('coverBooks')
                                             ->responsiveImages()
                                             ->storeFileNamesIn('cover_image_file_names')
-                                            ->deleteUploadedFileUsing(function ($record) {
+                                            ->deleteUploadedFileUsing(function ($record): void {
                                                 Storage::disk('public')->delete($record);
                                             }),
                                     ]),
@@ -138,7 +138,7 @@ class BooksRelationManager extends RelationManager
                 ActionGroup::make([
                     EditAction::make(),
                     DeleteAction::make()
-                        ->before(function ($record) {
+                        ->before(function ($record): void {
                             Storage::disk('public')->delete($record);
                         }),
                 ]),
@@ -146,8 +146,8 @@ class BooksRelationManager extends RelationManager
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->before(function ($records) {
-                            $records->each(function ($record) {
+                        ->before(function ($records): void {
+                            $records->each(function ($record): void {
                                 Storage::disk('public')->delete($record);
                             });
                         }),

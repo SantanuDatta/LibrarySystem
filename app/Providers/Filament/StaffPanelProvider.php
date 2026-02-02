@@ -2,19 +2,18 @@
 
 namespace App\Providers\Filament;
 
-use Filament\Pages\Dashboard;
 use App\Filament\Staff\Pages\Auth\EditProfile;
 use App\Filament\Staff\Pages\Auth\Login;
 use App\Filament\Staff\Pages\Auth\Register;
+use App\Filament\Staff\Widgets\AccountWidget;
 use App\Settings\GeneralSettings;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages;
+use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use App\Filament\Staff\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;

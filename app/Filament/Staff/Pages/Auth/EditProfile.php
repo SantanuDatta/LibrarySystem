@@ -2,11 +2,11 @@
 
 namespace App\Filament\Staff\Pages\Auth;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Component;
 use App\Models\User;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class EditProfile extends \Filament\Auth\Pages\EditProfile

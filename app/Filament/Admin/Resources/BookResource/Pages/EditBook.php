@@ -21,7 +21,7 @@ class EditBook extends EditRecord
     {
         return [
             DeleteAction::make()
-                ->before(function ($record) {
+                ->before(function ($record): void {
                     Storage::disk('public')
                         ->delete($record);
                 }),

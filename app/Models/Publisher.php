@@ -38,16 +38,16 @@ class Publisher extends Model implements HasMedia
     {
         parent::boot();
 
-        static::created(function ($model) {
+        static::created(function ($model): void {
             $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
-            if(Cache::has($cacheKey)) {
+            if (Cache::has($cacheKey)) {
                 Cache::forget($cacheKey);
             }
         });
 
-        static::deleted(function ($model) {
+        static::deleted(function ($model): void {
             $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
-            if(Cache::has($cacheKey)) {
+            if (Cache::has($cacheKey)) {
                 Cache::forget($cacheKey);
             }
         });
