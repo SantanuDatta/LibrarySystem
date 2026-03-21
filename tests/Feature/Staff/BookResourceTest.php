@@ -1,8 +1,8 @@
 <?php
 
-use App\Filament\Staff\Resources\BookResource\Pages\CreateBook;
-use App\Filament\Staff\Resources\BookResource\Pages\EditBook;
-use App\Filament\Staff\Resources\BookResource\Pages\ListBooks;
+use App\Filament\Staff\Resources\Books\Pages\CreateBook;
+use App\Filament\Staff\Resources\Books\Pages\EditBook;
+use App\Filament\Staff\Resources\Books\Pages\ListBooks;
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\Genre;
@@ -16,38 +16,42 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 
-beforeEach(function (): void {
+$state = new stdClass;
+
+beforeEach(function () use ($state): void {
     asRole(Role::IS_STAFF);
 
-    $this->book = Book::factory()
-        ->has(Author::factory(), relationship: 'author')
-        ->has(Publisher::factory(), relationship: 'publisher')
+    $state->publisher = Publisher::factory()->create();
+
+    $state->book = Book::factory()
+        ->for($state->publisher, 'publisher')
+        ->for(Author::factory()->for($state->publisher, 'publisher'), 'author')
         ->has(Genre::factory(), relationship: 'genre')
         ->create();
 
-    $this->makeBook = Book::factory()
-        ->has(Author::factory(), relationship: 'author')
-        ->has(Publisher::factory(), relationship: 'publisher')
+    $state->makeBook = Book::factory()
+        ->for($state->publisher, 'publisher')
+        ->for(Author::factory()->for($state->publisher, 'publisher'), 'author')
         ->has(Genre::factory(), relationship: 'genre')
         ->make();
 
     Storage::fake('public');
 });
 
-describe('Book List Page', function (): void {
-    beforeEach(function (): void {
-        $this->list = livewire(ListBooks::class, [
-            'record' => $this->book,
+describe('Book List Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->list = livewire(ListBooks::class, [
+            'record' => $state->book,
             'panel' => 'staff',
         ]);
     });
 
-    it('can render the list page', function (): void {
-        $this->list
+    it('can render the list page', function () use ($state): void {
+        $state->list
             ->assertSuccessful();
     });
 
-    it('has cover image, title, author, stock and availability column', function (): void {
+    it('has cover image, title, author, stock and availability column', function () use ($state): void {
         $expectedColumns = [
             'cover_image',
             'title',
@@ -57,15 +61,14 @@ describe('Book List Page', function (): void {
         ];
 
         foreach ($expectedColumns as $column) {
-            $this->list->assertTableColumnExists($column);
+            $state->list->assertTableColumnExists($column);
         }
     });
 
-    it('can get books cover image, title, author, stock and availability', function (): void {
-        $books = $this->book;
-        $book = $books->first();
+    it('can get books cover image, title, author, stock and availability', function () use ($state): void {
+        $book = $state->book->first();
 
-        $this->list
+        $state->list
             // ->assertTableColumnStateSet('cover_image', $book->cover_image, record: $book)
             ->assertTableColumnStateSet('title', $book->title, record: $book)
             ->assertTableColumnStateSet('author.name', $book->author->name, record: $book)
@@ -73,29 +76,29 @@ describe('Book List Page', function (): void {
             ->assertTableColumnStateSet('available', $book->available, record: $book);
     });
 
-    it('can create a new book but can not delete the book', function (): void {
-        $this->list
+    it('can create a new book but can not delete the book', function () use ($state): void {
+        $state->list
             ->assertActionEnabled('create')
-            ->assertTableActionDisabled('delete', $this->book);
+            ->assertTableActionDisabled('delete', $state->book);
     });
 });
 
-describe('Book Create Page', function (): void {
-    beforeEach(function (): void {
-        $this->create = livewire(CreateBook::class, ['panel' => 'staff']);
-        $this->imagePath = UploadedFile::fake()
+describe('Book Create Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->create = livewire(CreateBook::class, ['panel' => 'staff']);
+        $state->imagePath = UploadedFile::fake()
             ->image('image.jpg', 50, 50);
     });
 
-    it('can render the create page', function (): void {
-        $this->create
+    it('can render the create page', function () use ($state): void {
+        $state->create
             ->assertSuccessful();
     });
 
-    it('can create a new book', function (): void {
-        $newBook = $this->makeBook;
+    it('can create a new book', function () use ($state): void {
+        $newBook = $state->makeBook;
 
-        $this->create
+        $state->create
             ->fillForm([
                 'publisher_id' => $newBook->publisher->getKey(),
                 'author_id' => $newBook->author->getKey(),
@@ -118,23 +121,23 @@ describe('Book Create Page', function (): void {
             'title' => $newBook->title,
             'isbn' => $newBook->isbn,
             'price' => $newBook->price,
-            'description' => $newBook->description,
+            'description' => e($newBook->description),
             'stock' => $newBook->stock,
             'available' => $newBook->available,
-            'published' => $newBook->published,
+            'published' => $newBook->published?->format('Y-m-d H:i:s'),
         ]);
     });
 
-    it('can create a new book with a cover image', function (): void {
-        $newBook = $this->makeBook;
+    it('can create a new book with a cover image', function () use ($state): void {
+        $newBook = $state->makeBook;
 
-        $this->create
+        $state->create
             ->fillForm([
                 'publisher_id' => $newBook->publisher->getKey(),
                 'author_id' => $newBook->author->getKey(),
                 'genre_id' => $newBook->genre->getKey(),
                 'title' => $newBook->title,
-                'cover_image' => $this->imagePath,
+                'cover_image' => $state->imagePath,
                 'isbn' => $newBook->isbn,
                 'price' => $newBook->price,
                 'description' => $newBook->description,
@@ -152,14 +155,14 @@ describe('Book Create Page', function (): void {
             'title' => $newBook->title,
             'isbn' => $newBook->isbn,
             'price' => $newBook->price,
-            'description' => $newBook->description,
+            'description' => e($newBook->description),
             'stock' => $newBook->stock,
             'available' => $newBook->available,
-            'published' => $newBook->published,
+            'published' => $newBook->published?->format('Y-m-d H:i:s'),
         ]);
 
         $createdBook = Book::latest()->first();
-        $createdBook->addMedia($this->imagePath)->toMediaCollection('coverBooks');
+        $createdBook->addMedia($state->imagePath)->toMediaCollection('coverBooks');
         $mediaCollection = $createdBook->getMedia('coverBooks')->last();
 
         expect($mediaCollection)
@@ -171,8 +174,8 @@ describe('Book Create Page', function (): void {
             ->file_name->toBe($mediaCollection->file_name);
     });
 
-    it('can validate form data on create', function (): void {
-        $this->create
+    it('can validate form data on create', function () use ($state): void {
+        $state->create
             ->fillForm([
                 'title' => null,
                 'publisher_id' => null,
@@ -197,25 +200,25 @@ describe('Book Create Page', function (): void {
     });
 });
 
-describe('Book Edit Page', function (): void {
-    beforeEach(function (): void {
-        $this->edit = livewire(EditBook::class, [
-            'record' => $this->book->getRouteKey(),
+describe('Book Edit Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->edit = livewire(EditBook::class, [
+            'record' => $state->book->getRouteKey(),
             'panel' => 'staff',
         ]);
-        $this->updatedImagePath = UploadedFile::fake()
+        $state->updatedImagePath = UploadedFile::fake()
             ->image('updated_image.jpg', 50, 50);
     });
 
-    it('can render the edit page', function (): void {
-        $this->edit
+    it('can render the edit page', function () use ($state): void {
+        $state->edit
             ->assertSuccessful();
     });
 
-    it('can retrieve data', function (): void {
-        $book = $this->book;
+    it('can retrieve data', function () use ($state): void {
+        $book = $state->book;
 
-        $this->edit
+        $state->edit
             ->assertFormSet([
                 'author_id' => $book->author->getKey(),
                 'publisher_id' => $book->publisher->getKey(),
@@ -223,18 +226,18 @@ describe('Book Edit Page', function (): void {
                 'title' => $book->title,
                 'isbn' => $book->isbn,
                 'price' => $book->price,
-                'description' => $book->description,
+                'description' => e($book->description),
                 'stock' => $book->stock,
                 'available' => $book->available,
                 'published' => $book->published->format('Y-m-d'),
             ]);
     });
 
-    it('can update the book', function (): void {
-        $book = $this->book;
-        $updatedBook = $this->makeBook;
+    it('can update the book', function () use ($state): void {
+        $book = $state->book;
+        $updatedBook = $state->makeBook;
 
-        $this->edit
+        $state->edit
             ->fillForm([
                 'title' => $updatedBook->title,
                 'publisher_id' => $updatedBook->publisher->getKey(),
@@ -257,17 +260,17 @@ describe('Book Edit Page', function (): void {
             ->genre_id->toBe($updatedBook->genre->getKey())
             ->isbn->toBe($updatedBook->isbn)
             ->price->toBe($updatedBook->price)
-            ->description->toBe($updatedBook->description)
+            ->description->toBe(e($updatedBook->description))
             ->stock->toBe($updatedBook->stock)
             ->available->toBe($updatedBook->available)
             ->published->format('Y-m-d')->toBe($updatedBook->published->format('Y-m-d'));
     });
 
-    it('can update the book with a cover image', function (): void {
-        $book = $this->book;
-        $updatedBook = $this->makeBook;
+    it('can update the book with a cover image', function () use ($state): void {
+        $book = $state->book;
+        $updatedBook = $state->makeBook;
 
-        $this->edit
+        $state->edit
             ->fillForm([
                 'title' => $updatedBook->title,
                 'publisher_id' => $updatedBook->publisher->getKey(),
@@ -279,14 +282,14 @@ describe('Book Edit Page', function (): void {
                 'stock' => $updatedBook->stock,
                 'available' => $updatedBook->available,
                 'published' => $updatedBook->published,
-                'cover_image' => $this->updatedImagePath,
+                'cover_image' => $state->updatedImagePath,
             ])
             ->call('save')
             ->assertHasNoFormErrors();
 
         $book->refresh();
 
-        $book->addMedia($this->updatedImagePath, 'coverBooks')->toMediaCollection('coverBooks');
+        $book->addMedia($state->updatedImagePath, 'coverBooks')->toMediaCollection('coverBooks');
         $mediaCollection = $book->getMedia('coverBooks')->last();
 
         expect($book)
@@ -296,7 +299,7 @@ describe('Book Edit Page', function (): void {
             ->genre_id->toBe($updatedBook->genre->getKey())
             ->isbn->toBe($updatedBook->isbn)
             ->price->toBe($updatedBook->price)
-            ->description->toBe($updatedBook->description)
+            ->description->toBe(e($updatedBook->description))
             ->stock->toBe($updatedBook->stock)
             ->available->toBe($updatedBook->available)
             ->published->format('Y-m-d')->toBe($updatedBook->published->format('Y-m-d'));
@@ -310,14 +313,14 @@ describe('Book Edit Page', function (): void {
             ->file_name->toBe($mediaCollection->file_name);
     });
 
-    it('can validate form data on edit', function (): void {
+    it('can validate form data on edit', function () use ($state): void {
         Book::factory()
-            ->has(Author::factory(), relationship: 'author')
-            ->has(Publisher::factory(), relationship: 'publisher')
+            ->for($state->publisher, 'publisher')
+            ->for(Author::factory()->for($state->publisher, 'publisher'), 'author')
             ->has(Genre::factory(), relationship: 'genre')
             ->create();
 
-        $this->edit
+        $state->edit
             ->fillForm([
                 'title' => null,
                 'publisher_id' => null,
@@ -341,10 +344,8 @@ describe('Book Edit Page', function (): void {
             ]);
     });
 
-    it('can not delete a book from the edit page', function (): void {
-        $this->book;
-
-        $this->edit
+    it('can not delete a book from the edit page', function () use ($state): void {
+        $state->edit
             ->assertActionHidden(DeleteAction::class);
     });
 });

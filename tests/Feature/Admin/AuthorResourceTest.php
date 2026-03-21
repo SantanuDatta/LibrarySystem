@@ -1,15 +1,14 @@
 <?php
 
-use App\Filament\Admin\Resources\AuthorResource\Pages\CreateAuthor;
-use App\Filament\Admin\Resources\AuthorResource\Pages\EditAuthor;
-use App\Filament\Admin\Resources\AuthorResource\Pages\ListAuthors;
-use App\Filament\Admin\Resources\AuthorResource\RelationManagers\BooksRelationManager;
+use App\Filament\Admin\Resources\Authors\Pages\CreateAuthor;
+use App\Filament\Admin\Resources\Authors\Pages\EditAuthor;
+use App\Filament\Admin\Resources\Authors\Pages\ListAuthors;
+use App\Filament\Admin\Resources\Authors\RelationManagers\BooksRelationManager;
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\Publisher;
 use App\Models\Role;
 use Filament\Actions\DeleteAction as FormDeleteAction;
-use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -19,34 +18,36 @@ use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Laravel\assertModelMissing;
 use function Pest\Livewire\livewire;
 
-beforeEach(function (): void {
+$state = new stdClass;
+
+beforeEach(function () use ($state): void {
     asRole(Role::IS_ADMIN);
 
-    $this->author = Author::factory()
+    $state->author = Author::factory()
         ->has(Publisher::factory())
         ->create();
 
-    $this->makeAuthor = Author::factory()
+    $state->makeAuthor = Author::factory()
         ->has(Publisher::factory())
         ->make();
 
     Storage::fake('public');
 });
 
-describe('Author List Page', function (): void {
-    beforeEach(function (): void {
-        $this->list = livewire(ListAuthors::class, [
-            'record' => $this->author,
+describe('Author List Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->list = livewire(ListAuthors::class, [
+            'record' => $state->author,
             'panel' => 'admin',
         ]);
     });
 
-    it('can render the list page', function (): void {
-        $this->list
+    it('can render the list page', function () use ($state): void {
+        $state->list
             ->assertSuccessful();
     });
 
-    it('can render author avatar, name, publisher and date of birth columns', function (): void {
+    it('can render author avatar, name, publisher and date of birth columns', function () use ($state): void {
         $expectedColumns = [
             'avatar',
             'name',
@@ -55,63 +56,63 @@ describe('Author List Page', function (): void {
         ];
 
         foreach ($expectedColumns as $column) {
-            $this->list
+            $state->list
                 ->assertTableColumnExists($column)
                 ->assertSuccessful();
         }
     });
 
-    it('can get authors avatar, name, publisher and date of birth', function (): void {
-        $authors = $this->author;
-        $author = $authors->first();
+    it('can get authors avatar, name, publisher and date of birth', function () use ($state): void {
+        $author = $state->author->first();
 
-        $this->list
-            //->assertTableColumnStateSet('avatar', $author->avatar, record: $author)
+        $state->list
+            // ->assertTableColumnStateSet('avatar', $author->avatar, record: $author)
             ->assertTableColumnStateSet('name', $author->name, record: $author)
             ->assertTableColumnStateSet('publisher.name', $author->publisher->name, record: $author)
             ->assertTableColumnStateSet('date_of_birth', $author->date_of_birth, record: $author);
     });
 
-    it('can delete an author without avatar', function (): void {
-        $this->list
-            ->callTableAction(TableDeleteAction::class, $this->author);
-        assertModelMissing($this->author);
+    it('can delete an author without avatar', function () use ($state): void {
+        $state->list
+            ->callTableAction('delete', $state->author);
+
+        assertModelMissing($state->author);
     });
 
-    it('can delete an author and its avatar', function (): void {
-        $avatar = $this->author->getFirstMedia('avatars');
+    it('can delete an author and its avatar', function () use ($state): void {
+        $avatar = $state->author->getFirstMedia('avatars');
 
-        $this->list
-            ->callTableAction(TableDeleteAction::class, $this->author);
+        $state->list
+            ->callTableAction('delete', $state->author);
 
-        assertModelMissing($this->author);
+        assertModelMissing($state->author);
 
         if ($avatar !== null) {
             assertDatabaseMissing('media', [
                 'model_type' => Author::class,
-                'model_id' => $this->author->id,
+                'model_id' => $state->author->id,
                 'collection_name' => 'avatars',
             ]);
         }
     });
 });
 
-describe('Author Create Page', function (): void {
-    beforeEach(function (): void {
-        $this->create = livewire(CreateAuthor::class, ['panel' => 'admin']);
-        $this->imagePath = UploadedFile::fake()
+describe('Author Create Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->create = livewire(CreateAuthor::class, ['panel' => 'admin']);
+        $state->imagePath = UploadedFile::fake()
             ->image('image.jpg', 50, 50);
     });
 
-    it('can render the create page', function (): void {
-        $this->create
+    it('can render the create page', function () use ($state): void {
+        $state->create
             ->assertSuccessful();
     });
 
-    it('can create an author', function (): void {
-        $newAuthor = $this->makeAuthor;
+    it('can create an author', function () use ($state): void {
+        $newAuthor = $state->makeAuthor;
 
-        $this->create
+        $state->create
             ->fillForm([
                 'name' => $newAuthor->name,
                 'publisher_id' => $newAuthor->publisher->getKey(),
@@ -124,21 +125,21 @@ describe('Author Create Page', function (): void {
         assertDatabaseHas('authors', [
             'name' => $newAuthor->name,
             'publisher_id' => $newAuthor->publisher->getKey(),
-            'date_of_birth' => $newAuthor->date_of_birth,
-            'bio' => $newAuthor->bio,
+            'date_of_birth' => $newAuthor->date_of_birth?->format('Y-m-d H:i:s'),
+            'bio' => e($newAuthor->bio),
         ]);
     });
 
-    it('can create a new author with an avatar', function (): void {
-        $newAuthor = $this->makeAuthor;
+    it('can create a new author with an avatar', function () use ($state): void {
+        $newAuthor = $state->makeAuthor;
 
-        $this->create
+        $state->create
             ->fillForm([
                 'name' => $newAuthor->name,
                 'publisher_id' => $newAuthor->publisher->getKey(),
                 'date_of_birth' => $newAuthor->date_of_birth,
                 'bio' => $newAuthor->bio,
-                'avatar' => $this->imagePath,
+                'avatar' => $state->imagePath,
             ])
             ->call('create')
             ->assertHasNoFormErrors();
@@ -146,12 +147,12 @@ describe('Author Create Page', function (): void {
         assertDatabaseHas('authors', [
             'name' => $newAuthor->name,
             'publisher_id' => $newAuthor->publisher->getKey(),
-            'date_of_birth' => $newAuthor->date_of_birth,
-            'bio' => $newAuthor->bio,
+            'date_of_birth' => $newAuthor->date_of_birth?->format('Y-m-d H:i:s'),
+            'bio' => e($newAuthor->bio),
         ]);
 
         $createdAuthor = Author::latest()->first();
-        $createdAuthor->addMedia($this->imagePath, 'public')->toMediaCollection('avatars');
+        $createdAuthor->addMedia($state->imagePath, 'public')->toMediaCollection('avatars');
         $mediaCollection = $createdAuthor->getMedia('avatars')->last();
 
         expect($mediaCollection)
@@ -163,8 +164,8 @@ describe('Author Create Page', function (): void {
             ->file_name->toBe($mediaCollection->file_name);
     });
 
-    it('can validate form data on create', function (): void {
-        $this->create
+    it('can validate form data on create', function () use ($state): void {
+        $state->create
             ->fillForm([
                 'name' => null,
                 'publisher_id' => null,
@@ -179,26 +180,26 @@ describe('Author Create Page', function (): void {
     });
 });
 
-describe('Author Edit Page', function (): void {
-    beforeEach(function (): void {
-        $this->edit = livewire(EditAuthor::class, [
-            'record' => $this->author->getRouteKey(),
+describe('Author Edit Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->edit = livewire(EditAuthor::class, [
+            'record' => $state->author->getRouteKey(),
             'panel' => 'admin',
         ]);
-        $this->updatedImagePath = UploadedFile::fake()
+        $state->updatedImagePath = UploadedFile::fake()
             ->image('updated_image.jpg', 50, 50);
     });
 
-    it('can render the edit page', function (): void {
-        $this->edit
+    it('can render the edit page', function () use ($state): void {
+        $state->edit
             ->assertSuccessful();
     });
 
-    it('can update an author', function (): void {
-        $author = $this->author;
-        $updatedAuthor = $this->makeAuthor;
+    it('can update an author', function () use ($state): void {
+        $author = $state->author;
+        $updatedAuthor = $state->makeAuthor;
 
-        $this->edit
+        $state->edit
             ->fillForm([
                 'name' => $updatedAuthor->name,
                 'publisher_id' => $updatedAuthor->publisher->getKey(),
@@ -215,24 +216,24 @@ describe('Author Edit Page', function (): void {
             ->bio->toBe($author->bio);
     });
 
-    it('can update an author with an avatar', function (): void {
-        $author = $this->author;
-        $updatedAuthor = $this->makeAuthor;
+    it('can update an author with an avatar', function () use ($state): void {
+        $author = $state->author;
+        $updatedAuthor = $state->makeAuthor;
 
-        $this->edit
+        $state->edit
             ->fillForm([
                 'name' => $updatedAuthor->name,
                 'publisher_id' => $updatedAuthor->publisher->getKey(),
                 'date_of_birth' => $updatedAuthor->date_of_birth,
                 'bio' => $updatedAuthor->bio,
-                'avatar' => $this->updatedImagePath,
+                'avatar' => $state->updatedImagePath,
             ])
             ->call('save')
             ->assertHasNoFormErrors();
 
         $author->refresh();
 
-        $author->addMedia($this->updatedImagePath, 'public')->toMediaCollection('avatars');
+        $author->addMedia($state->updatedImagePath, 'public')->toMediaCollection('avatars');
         $mediaCollection = $author->getMedia('avatars')->last();
 
         expect($author)
@@ -250,11 +251,12 @@ describe('Author Edit Page', function (): void {
             ->file_name->toBe($mediaCollection->file_name);
     });
 
-    it('can validate form data on edit', function (): void {
+    it('can validate form data on edit', function () use ($state): void {
         Author::factory()
             ->has(Publisher::factory(), relationship: 'publisher')
             ->create();
-        $this->edit
+
+        $state->edit
             ->fillForm([
                 'name' => null,
                 'publisher_id' => null,
@@ -280,30 +282,27 @@ describe('Author Edit Page', function (): void {
         ])->assertSuccessful();
     });
 
-    it('can delete an author without avatar from the edit page', function (): void {
-        $this->author;
-
-        $this->edit
+    it('can delete an author without avatar from the edit page', function () use ($state): void {
+        $state->edit
             ->callAction(FormDeleteAction::class);
 
-        assertModelMissing($this->author);
+        assertModelMissing($state->author);
     });
 
-    it('can delete an author and its avatar from the edit page', function (): void {
-        $avatar = $this->author->getFirstMedia('avatars');
+    it('can delete an author and its avatar from the edit page', function () use ($state): void {
+        $avatar = $state->author->getFirstMedia('avatars');
 
-        $this->edit
+        $state->edit
             ->callAction(FormDeleteAction::class);
 
-        assertModelMissing($this->author);
+        assertModelMissing($state->author);
 
         if ($avatar !== null) {
             assertDatabaseMissing('media', [
                 'model_type' => Author::class,
-                'model_id' => $this->author->id,
+                'model_id' => $state->author->id,
                 'collection_name' => 'avatars',
             ]);
         }
     });
-
 });

@@ -1,8 +1,8 @@
 <?php
 
-use App\Filament\Staff\Resources\PublisherResource\Pages\CreatePublisher;
-use App\Filament\Staff\Resources\PublisherResource\Pages\EditPublisher;
-use App\Filament\Staff\Resources\PublisherResource\Pages\ListPublishers;
+use App\Filament\Staff\Resources\Publishers\Pages\CreatePublisher;
+use App\Filament\Staff\Resources\Publishers\Pages\EditPublisher;
+use App\Filament\Staff\Resources\Publishers\Pages\ListPublishers;
 use App\Models\Publisher;
 use App\Models\Role;
 use Filament\Actions\DeleteAction;
@@ -13,30 +13,31 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 
-beforeEach(function (): void {
+$state = new stdClass;
+
+beforeEach(function () use ($state): void {
     asRole(Role::IS_STAFF);
 
-    $this->publisher = Publisher::factory()->create();
-
-    $this->makePublisher = Publisher::factory()->make();
+    $state->publisher = Publisher::factory()->create();
+    $state->makePublisher = Publisher::factory()->make();
 
     Storage::fake('public');
 });
 
-describe('Publisher List Page', function (): void {
-    beforeEach(function (): void {
-        $this->list = livewire(ListPublishers::class, [
-            'record' => $this->publisher,
+describe('Publisher List Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->list = livewire(ListPublishers::class, [
+            'record' => $state->publisher,
             'panel' => 'staff',
         ]);
     });
 
-    it('can render the list page', function (): void {
-        $this->list
+    it('can render the list page', function () use ($state): void {
+        $state->list
             ->assertSuccessful();
     });
 
-    it('can render publisher logo, name and founded', function (): void {
+    it('can render publisher logo, name and founded', function () use ($state): void {
         $expectedColumns = [
             'logo',
             'name',
@@ -44,47 +45,46 @@ describe('Publisher List Page', function (): void {
         ];
 
         foreach ($expectedColumns as $column) {
-            $this->list
+            $state->list
                 ->assertTableColumnExists($column)
                 ->assertSuccessful();
         }
     });
 
-    it('can get publisher logo, name and founded', function (): void {
-        $publishers = $this->publisher;
-        $publisher = $publishers->first();
+    it('can get publisher logo, name and founded', function () use ($state): void {
+        $publisher = $state->publisher->first();
 
-        $this->list
+        $state->list
             // ->assertTableColumnStateSet('logo', $publisher->logo, record: $publisher)
             ->assertTableColumnStateSet('name', $publisher->name, record: $publisher)
             ->assertTableColumnStateSet('founded', $publisher->founded, record: $publisher);
     });
 
-    it('can create a publisher but can not delete it', function (): void {
-        $this->list
+    it('can create a publisher but can not delete it', function () use ($state): void {
+        $state->list
             ->assertActionEnabled('create')
-            ->assertTableActionDisabled('delete', $this->publisher);
+            ->assertTableActionDisabled('delete', $state->publisher);
     });
 });
 
-describe('Publisher Create Page', function (): void {
-    beforeEach(function (): void {
-        $this->create = livewire(CreatePublisher::class, [
+describe('Publisher Create Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->create = livewire(CreatePublisher::class, [
             'panel' => 'staff',
         ]);
-        $this->imagePath = UploadedFile::fake()
+        $state->imagePath = UploadedFile::fake()
             ->image('image.jpg', 50, 50);
     });
 
-    it('can render the create page', function (): void {
-        $this->create
+    it('can render the create page', function () use ($state): void {
+        $state->create
             ->assertSuccessful();
     });
 
-    it('can create a new publisher', function (): void {
-        $newPublisher = $this->makePublisher;
+    it('can create a new publisher', function () use ($state): void {
+        $newPublisher = $state->makePublisher;
 
-        $this->create
+        $state->create
             ->fillForm([
                 'name' => $newPublisher->name,
                 'founded' => $newPublisher->founded,
@@ -98,14 +98,14 @@ describe('Publisher Create Page', function (): void {
         ]);
     });
 
-    it('can create a new publisher with a logo', function (): void {
-        $newPublisher = $this->makePublisher;
+    it('can create a new publisher with a logo', function () use ($state): void {
+        $newPublisher = $state->makePublisher;
 
-        $this->create
+        $state->create
             ->fillForm([
                 'name' => $newPublisher->name,
                 'founded' => $newPublisher->founded,
-                'logo' => $this->imagePath,
+                'logo' => $state->imagePath,
             ])
             ->call('create')
             ->assertHasNoFormErrors();
@@ -115,9 +115,9 @@ describe('Publisher Create Page', function (): void {
             'founded' => $newPublisher->founded,
         ]);
 
-        $createPublisher = Publisher::latest()->first();
-        $createPublisher->addMedia($this->imagePath)->toMediaCollection('publishers');
-        $mediaCollection = $createPublisher->getMedia('publishers')->last();
+        $createdPublisher = Publisher::latest()->first();
+        $createdPublisher->addMedia($state->imagePath)->toMediaCollection('publishers');
+        $mediaCollection = $createdPublisher->getMedia('publishers')->last();
 
         expect($mediaCollection)
             ->toBeInstanceOf(Media::class)
@@ -128,8 +128,8 @@ describe('Publisher Create Page', function (): void {
             ->file_name->toBe($mediaCollection->file_name);
     });
 
-    it('can validate form data on create', function (): void {
-        $this->create
+    it('can validate form data on create', function () use ($state): void {
+        $state->create
             ->fillForm([
                 'name' => null,
                 'founded' => null,
@@ -142,26 +142,26 @@ describe('Publisher Create Page', function (): void {
     });
 });
 
-describe('Publisher Edit Page', function (): void {
-    beforeEach(function (): void {
-        $this->edit = livewire(EditPublisher::class, [
-            'record' => $this->publisher->getRouteKey(),
+describe('Publisher Edit Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->edit = livewire(EditPublisher::class, [
+            'record' => $state->publisher->getRouteKey(),
             'panel' => 'staff',
         ]);
-        $this->updatedImagePath = UploadedFile::fake()
+        $state->updatedImagePath = UploadedFile::fake()
             ->image('updated_image.jpg', 50, 50);
     });
 
-    it('can render the edit page', function (): void {
-        $this->edit
+    it('can render the edit page', function () use ($state): void {
+        $state->edit
             ->assertSuccessful();
     });
 
-    it('can edit a publisher', function (): void {
-        $publisher = $this->publisher;
-        $updatedPublisher = $this->makePublisher;
+    it('can edit a publisher', function () use ($state): void {
+        $publisher = $state->publisher;
+        $updatedPublisher = $state->makePublisher;
 
-        $this->edit
+        $state->edit
             ->fillForm([
                 'name' => $updatedPublisher->name,
                 'founded' => $updatedPublisher->founded,
@@ -174,21 +174,21 @@ describe('Publisher Edit Page', function (): void {
             ->founded->format('Y-m-d')->toBe($updatedPublisher->founded->format('Y-m-d'));
     });
 
-    it('can edit a publisher with a logo', function (): void {
-        $publisher = $this->publisher;
-        $updatedPublisher = $this->makePublisher;
+    it('can edit a publisher with a logo', function () use ($state): void {
+        $publisher = $state->publisher;
+        $updatedPublisher = $state->makePublisher;
 
-        $this->edit
+        $state->edit
             ->fillForm([
                 'name' => $updatedPublisher->name,
                 'founded' => $updatedPublisher->founded,
-                'logo' => $this->updatedImagePath,
+                'logo' => $state->updatedImagePath,
             ])
             ->call('save')
             ->assertHasNoFormErrors();
 
         $publisher->refresh();
-        $publisher->addMedia($this->updatedImagePath, 'publishers')->toMediaCollection('publishers');
+        $publisher->addMedia($state->updatedImagePath, 'publishers')->toMediaCollection('publishers');
         $mediaCollection = $publisher->getMedia('publishers')->last();
 
         expect($publisher)
@@ -204,10 +204,10 @@ describe('Publisher Edit Page', function (): void {
             ->file_name->toBe($mediaCollection->file_name);
     });
 
-    it('can validate form data on edit', function (): void {
-        Publisher::factory()
-            ->create();
-        $this->edit
+    it('can validate form data on edit', function () use ($state): void {
+        Publisher::factory()->create();
+
+        $state->edit
             ->fillForm([
                 'name' => null,
                 'founded' => null,
@@ -219,10 +219,8 @@ describe('Publisher Edit Page', function (): void {
             ]);
     });
 
-    it('can not delete a publisher from the edit page', function (): void {
-        $this->publisher;
-
-        $this->edit
+    it('can not delete a publisher from the edit page', function () use ($state): void {
+        $state->edit
             ->assertActionHidden(DeleteAction::class);
     });
 });

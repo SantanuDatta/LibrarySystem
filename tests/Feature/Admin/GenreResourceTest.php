@@ -1,40 +1,41 @@
 <?php
 
-use App\Filament\Admin\Resources\GenreResource\Pages\CreateGenre;
-use App\Filament\Admin\Resources\GenreResource\Pages\EditGenre;
-use App\Filament\Admin\Resources\GenreResource\Pages\ListGenres;
-use App\Filament\Admin\Resources\GenreResource\RelationManagers\BooksRelationManager;
+use App\Filament\Admin\Resources\Genres\Pages\CreateGenre;
+use App\Filament\Admin\Resources\Genres\Pages\EditGenre;
+use App\Filament\Admin\Resources\Genres\Pages\ListGenres;
+use App\Filament\Admin\Resources\Genres\RelationManagers\BooksRelationManager;
 use App\Models\Book;
 use App\Models\Genre;
 use App\Models\Role;
 use Filament\Actions\DeleteAction as FormDeleteAction;
-use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertModelMissing;
 use function Pest\Livewire\livewire;
 
-beforeEach(function (): void {
+$state = new stdClass;
+
+beforeEach(function () use ($state): void {
     asRole(Role::IS_ADMIN);
 
-    $this->genre = Genre::factory()->create();
-
-    $this->makeGenre = Genre::factory()->make();
+    $state->genre = Genre::factory()->create();
+    $state->makeGenre = Genre::factory()->make();
 });
 
-describe('Genre List Page', function (): void {
-    beforeEach(function (): void {
-        $this->list = livewire(ListGenres::class, [
-            'record' => $this->genre,
+describe('Genre List Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->list = livewire(ListGenres::class, [
+            'record' => $state->genre,
             'panel' => 'admin',
         ]);
     });
-    it('can render the index', function (): void {
-        $this->list
+
+    it('can render the index', function () use ($state): void {
+        $state->list
             ->assertSuccessful();
     });
 
-    it('can render genre name, bg color and text color', function (): void {
+    it('can render genre name, bg color and text color', function () use ($state): void {
         $expectedColumns = [
             'name',
             'bg_color',
@@ -42,44 +43,45 @@ describe('Genre List Page', function (): void {
         ];
 
         foreach ($expectedColumns as $column) {
-            $this->list
+            $state->list
                 ->assertTableColumnExists($column)
                 ->assertSuccessful();
         }
     });
 
-    it('can get genre name, bg color and text color', function (): void {
-        $genres = $this->genre;
-        $genre = $genres->first();
+    it('can get genre name, bg color and text color', function () use ($state): void {
+        $genre = $state->genre->first();
 
-        $this->list
+        $state->list
             ->assertTableColumnStateSet('name', $genre->name, record: $genre)
             ->assertTableColumnStateSet('bg_color', $genre->bg_color, record: $genre)
             ->assertTableColumnStateSet('text_color', $genre->text_color, record: $genre);
     });
 
-    it('can delete a genre', function (): void {
-        $this->list
-            ->callTableAction(TableDeleteAction::class, $this->genre);
-        assertModelMissing($this->genre);
+    it('can delete a genre', function () use ($state): void {
+        $state->list
+            ->callTableAction('delete', $state->genre);
+
+        assertModelMissing($state->genre);
     });
 });
 
-describe('Genre Create Page', function (): void {
-    beforeEach(function (): void {
-        $this->create = livewire(CreateGenre::class, [
+describe('Genre Create Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->create = livewire(CreateGenre::class, [
             'panel' => 'admin',
         ]);
     });
 
-    it('can render the create page', function (): void {
-        $this->create
+    it('can render the create page', function () use ($state): void {
+        $state->create
             ->assertSuccessful();
     });
 
-    it('can create a new genre', function (): void {
-        $newGenre = $this->makeGenre;
-        $this->create
+    it('can create a new genre', function () use ($state): void {
+        $newGenre = $state->makeGenre;
+
+        $state->create
             ->fillForm([
                 'name' => $newGenre->name,
                 'bg_color' => $newGenre->bg_color,
@@ -95,8 +97,8 @@ describe('Genre Create Page', function (): void {
         ]);
     });
 
-    it('can validate form data on create', function (): void {
-        $this->create
+    it('can validate form data on create', function () use ($state): void {
+        $state->create
             ->fillForm([
                 'name' => null,
             ])
@@ -107,24 +109,24 @@ describe('Genre Create Page', function (): void {
     });
 });
 
-describe('Genre Edit Page', function (): void {
-    beforeEach(function (): void {
-        $this->edit = livewire(EditGenre::class, [
-            'record' => $this->genre->getRouteKey(),
+describe('Genre Edit Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->edit = livewire(EditGenre::class, [
+            'record' => $state->genre->getRouteKey(),
             'panel' => 'admin',
         ]);
     });
 
-    it('can render the edit page', function (): void {
-        $this->edit
+    it('can render the edit page', function () use ($state): void {
+        $state->edit
             ->assertSuccessful();
     });
 
-    it('can update a genre', function (): void {
-        $genre = $this->genre;
-        $updatedGenre = $this->makeGenre;
+    it('can update a genre', function () use ($state): void {
+        $genre = $state->genre;
+        $updatedGenre = $state->makeGenre;
 
-        $this->edit
+        $state->edit
             ->fillForm([
                 'name' => $updatedGenre->name,
                 'bg_color' => $updatedGenre->bg_color,
@@ -139,11 +141,10 @@ describe('Genre Edit Page', function (): void {
             ->text_color->toBe($updatedGenre->text_color);
     });
 
-    it('can validate form data on update', function (): void {
-        Genre::factory()
-            ->create();
+    it('can validate form data on update', function () use ($state): void {
+        Genre::factory()->create();
 
-        $this->edit
+        $state->edit
             ->fillForm([
                 'name' => null,
             ])
@@ -154,22 +155,20 @@ describe('Genre Edit Page', function (): void {
     });
 
     it('can render a relation manager with books', function (): void {
-        $author = Genre::factory()
+        $genre = Genre::factory()
             ->has(Book::factory()->count(10))
             ->create();
 
         livewire(BooksRelationManager::class, [
-            'ownerRecord' => $author,
+            'ownerRecord' => $genre,
             'pageClass' => EditGenre::class,
         ])->assertSuccessful();
     });
 
-    it('can delete a genre from the edit page', function (): void {
-        $this->genre;
-
-        $this->edit
+    it('can delete a genre from the edit page', function () use ($state): void {
+        $state->edit
             ->callAction(FormDeleteAction::class);
 
-        assertModelMissing($this->genre);
+        assertModelMissing($state->genre);
     });
 });

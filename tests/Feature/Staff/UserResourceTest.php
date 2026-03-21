@@ -1,8 +1,8 @@
 <?php
 
-use App\Filament\Staff\Resources\UserResource\Pages\CreateUser;
-use App\Filament\Staff\Resources\UserResource\Pages\EditUser;
-use App\Filament\Staff\Resources\UserResource\Pages\ListUsers;
+use App\Filament\Staff\Resources\Users\Pages\CreateUser;
+use App\Filament\Staff\Resources\Users\Pages\EditUser;
+use App\Filament\Staff\Resources\Users\Pages\ListUsers;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -13,36 +13,36 @@ use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 use function PHPUnit\Framework\assertEquals;
 
-beforeEach(function (): void {
+$state = new stdClass;
+
+beforeEach(function () use ($state): void {
     asRole(Role::IS_STAFF);
 
-    $this->user = User::factory([
+    $state->user = User::factory([
         'role_id' => Role::getId(Role::IS_BORROWER),
-    ])
-        ->create();
+    ])->create();
 
-    $this->makeUser = User::factory([
+    $state->makeUser = User::factory([
         'role_id' => Role::getId(Role::IS_BORROWER),
-    ])
-        ->make();
+    ])->make();
 
     Storage::fake('public');
 });
 
-describe('User List Page', function (): void {
-    beforeEach(function (): void {
-        $this->list = livewire(ListUsers::class, [
-            'record' => $this->user,
+describe('User List Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->list = livewire(ListUsers::class, [
+            'record' => $state->user,
             'panel' => 'staff',
         ]);
     });
 
-    it('can render the list page', function (): void {
-        $this->list
+    it('can render the list page', function () use ($state): void {
+        $state->list
             ->assertSuccessful();
     });
 
-    it('has users avatar, name, email, role and status', function (): void {
+    it('has users avatar, name, email, role and status', function () use ($state): void {
         $expectedColumns = [
             'avatar_url',
             'name',
@@ -52,15 +52,14 @@ describe('User List Page', function (): void {
         ];
 
         foreach ($expectedColumns as $column) {
-            $this->list->assertTableColumnExists($column);
+            $state->list->assertTableColumnExists($column);
         }
     });
 
-    it('can get users avatar, name, email, role and status', function (): void {
-        $users = $this->user;
-        $user = $users->first();
+    it('can get users avatar, name, email, role and status', function () use ($state): void {
+        $user = $state->user;
 
-        $this->list
+        $state->list
             ->assertTableColumnStateSet('avatar_url', $user->avatar_url, record: $user)
             ->assertTableColumnStateSet('name', $user->name, record: $user)
             ->assertTableColumnStateSet('email', $user->email, record: $user)
@@ -68,33 +67,32 @@ describe('User List Page', function (): void {
             ->assertTableColumnStateSet('status', $user->status, record: $user);
     });
 
-    it('can create a user but cannot delete it', function (): void {
-        $this->list
+    it('can create a user but cannot delete it', function () use ($state): void {
+        $state->list
             ->assertActionEnabled('create')
-            ->assertTableActionDisabled('delete', record: $this->user);
+            ->assertTableActionDisabled('delete', record: $state->user);
     });
 });
 
-describe('User Create Page', function (): void {
-    beforeEach(function (): void {
-        $this->create = livewire(CreateUser::class, [
+describe('User Create Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->create = livewire(CreateUser::class, [
             'panel' => 'staff',
         ]);
-        $this->imagePath = UploadedFile::fake()
+        $state->imagePath = UploadedFile::fake()
             ->image('image.jpg', 50, 50);
     });
 
-    it('can render the create page', function (): void {
-        $this->create
+    it('can render the create page', function () use ($state): void {
+        $state->create
             ->assertSuccessful();
     });
 
-    it('can create a user', function (): void {
-        $newUser = $this->makeUser;
-
+    it('can create a user', function () use ($state): void {
+        $newUser = $state->makeUser;
         $hashedPassword = Hash::make($newUser->password);
 
-        $this->create
+        $state->create
             ->fillForm([
                 'name' => $newUser->name,
                 'email' => $newUser->email,
@@ -115,20 +113,19 @@ describe('User Create Page', function (): void {
             ->address->toBe($newUser->address)
             ->phone->toBe($newUser->phone)
             ->status->toBe($newUser->status);
+
         assertEquals($createdUser->role_id, $newUser->role_id);
-        expect($createdUser);
 
         expect(Hash::check($newUser->password, $hashedPassword))->toBeTrue();
     });
 
-    it('can create a user with an avatar', function (): void {
-        $newUser = $this->makeUser;
-
+    it('can create a user with an avatar', function () use ($state): void {
+        $newUser = $state->makeUser;
         $hashedPassword = Hash::make($newUser->password);
 
-        $this->create
+        $state->create
             ->fillForm([
-                'avatar_url.0' => $this->imagePath->hashName(),
+                'avatar_url.0' => $state->imagePath->hashName(),
                 'name' => $newUser->name,
                 'email' => $newUser->email,
                 'password' => $hashedPassword,
@@ -141,7 +138,7 @@ describe('User Create Page', function (): void {
             ->assertHasNoFormErrors();
 
         assertDatabaseHas('users', [
-            'avatar_url' => $this->imagePath->hashName(),
+            'avatar_url' => $state->imagePath->hashName(),
             'name' => $newUser->name,
             'email' => $newUser->email,
             'address' => $newUser->address,
@@ -153,8 +150,8 @@ describe('User Create Page', function (): void {
         expect(Hash::check($newUser->password, $hashedPassword))->toBeTrue();
     });
 
-    it('can validate form data on create', function (): void {
-        $this->create
+    it('can validate form data on create', function () use ($state): void {
+        $state->create
             ->fillForm([
                 'name' => null,
                 'email' => null,
@@ -171,25 +168,25 @@ describe('User Create Page', function (): void {
     });
 });
 
-describe('User Edit Page', function (): void {
-    beforeEach(function (): void {
-        $this->edit = livewire(EditUser::class, [
-            'record' => $this->user->getRouteKey(),
+describe('User Edit Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->edit = livewire(EditUser::class, [
+            'record' => $state->user->getRouteKey(),
             'panel' => 'staff',
         ]);
-        $this->updatedImagePath = UploadedFile::fake()
+        $state->updatedImagePath = UploadedFile::fake()
             ->image('updated_image.jpg', 50, 50);
     });
 
-    it('can render the edit page', function (): void {
-        $this->edit
+    it('can render the edit page', function () use ($state): void {
+        $state->edit
             ->assertSuccessful();
     });
 
-    it('can retrieve data', function (): void {
-        $user = $this->user;
+    it('can retrieve data', function () use ($state): void {
+        $user = $state->user;
 
-        $this->edit
+        $state->edit
             ->assertFormSet([
                 'name' => $user->name,
                 'email' => $user->email,
@@ -202,11 +199,11 @@ describe('User Edit Page', function (): void {
             ]);
     });
 
-    it('can update user', function (): void {
-        $user = $this->user;
-        $updatedUser = $this->makeUser;
+    it('can update user', function () use ($state): void {
+        $user = $state->user;
+        $updatedUser = $state->makeUser;
 
-        $this->edit
+        $state->edit
             ->fillForm([
                 'name' => $updatedUser->name,
                 'email' => $updatedUser->email,
@@ -231,14 +228,13 @@ describe('User Edit Page', function (): void {
         }
     });
 
-    it('can update user with an avatar', function (): void {
-        $user = $this->user;
+    it('can update user with an avatar', function () use ($state): void {
+        $user = $state->user;
+        $updatedUser = $state->makeUser;
 
-        $updatedUser = $this->makeUser;
-
-        $this->edit
+        $state->edit
             ->fillForm([
-                'avatar_url.0' => $this->updatedImagePath->hashName(),
+                'avatar_url.0' => $state->updatedImagePath->hashName(),
                 'name' => $updatedUser->name,
                 'email' => $updatedUser->email,
                 'password' => $updatedUser->password,
@@ -251,7 +247,7 @@ describe('User Edit Page', function (): void {
             ->assertHasNoFormErrors();
 
         expect($user->refresh())
-            ->avatar_url->toBe($this->updatedImagePath->hashName())
+            ->avatar_url->toBe($state->updatedImagePath->hashName())
             ->name->toBe($updatedUser->name)
             ->email->toBe($updatedUser->email)
             ->address->toBe($updatedUser->address)
@@ -263,10 +259,8 @@ describe('User Edit Page', function (): void {
         }
     });
 
-    it('can validate form data on edit', function (): void {
-        $this->user;
-
-        $this->edit
+    it('can validate form data on edit', function () use ($state): void {
+        $state->edit
             ->fillForm([
                 'name' => null,
                 'email' => null,
@@ -278,10 +272,8 @@ describe('User Edit Page', function (): void {
             ]);
     });
 
-    it('can not delete the user from edit page', function (): void {
-        $this->user;
-
-        $this->edit
+    it('can not delete the user from edit page', function () use ($state): void {
+        $state->edit
             ->assertActionHidden('delete');
     });
 });

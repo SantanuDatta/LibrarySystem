@@ -1,9 +1,9 @@
 <?php
 
 use App\Enums\BorrowedStatus;
-use App\Filament\Staff\Resources\TransactionResource\Pages\CreateTransaction;
-use App\Filament\Staff\Resources\TransactionResource\Pages\EditTransaction;
-use App\Filament\Staff\Resources\TransactionResource\Pages\ListTransactions;
+use App\Filament\Staff\Resources\Transactions\Pages\CreateTransaction;
+use App\Filament\Staff\Resources\Transactions\Pages\EditTransaction;
+use App\Filament\Staff\Resources\Transactions\Pages\ListTransactions;
 use App\Models\Book;
 use App\Models\Role;
 use App\Models\Transaction;
@@ -13,58 +13,59 @@ use Filament\Actions\DeleteAction;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 
-beforeEach(function (): void {
+$state = new stdClass;
+
+beforeEach(function () use ($state): void {
     asRole(Role::IS_STAFF);
 
-    $this->user = User::factory([
-        'role_id' => Role::IS_BORROWER,
+    $state->user = User::factory([
+        'role_id' => Role::getId(Role::IS_BORROWER),
         'status' => true,
-    ])
-        ->create();
+    ])->create();
 
-    $this->transaction = Transaction::factory()
+    $state->transaction = Transaction::factory()
         ->for(Book::factory([
             'available' => true,
         ]))
-        ->for($this->user)
+        ->for($state->user)
         ->create();
 
-    $this->makeTransaction = Transaction::factory()
+    $state->makeTransaction = Transaction::factory()
         ->for(Book::factory([
             'available' => true,
         ]))
-        ->for($this->user)
+        ->for($state->user)
         ->make();
 });
 
-describe('Relation check with the user', function (): void {
-    test('book is being borrowed by a user whose role is a borrower', function (): void {
-        $transaction = $this->transaction;
+describe('Relation check with the user', function () use ($state): void {
+    test('book is being borrowed by a user whose role is a borrower', function () use ($state): void {
+        $transaction = $state->transaction;
 
         expect($transaction->book)
             ->toBeInstanceOf(Book::class);
 
-        $this->assertDatabaseHas('books', [
+        assertDatabaseHas('books', [
             'id' => $transaction->book->getKey(),
             'title' => $transaction->book->title,
         ]);
     });
 });
 
-describe('Transaction List Page', function (): void {
-    beforeEach(function (): void {
-        $this->list = livewire(ListTransactions::class, [
-            'record' => $this->transaction,
+describe('Transaction List Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->list = livewire(ListTransactions::class, [
+            'record' => $state->transaction,
             'panel' => 'staff',
         ]);
     });
 
-    it('can render the list page', function (): void {
-        $this->list
+    it('can render the list page', function () use ($state): void {
+        $state->list
             ->assertSuccessful();
     });
 
-    it('has borrower name, borrowed book with date and the return date with status', function (): void {
+    it('has borrower name, borrowed book with date and the return date with status', function () use ($state): void {
         $expectedColumns = [
             'user.name',
             'book.title',
@@ -74,15 +75,14 @@ describe('Transaction List Page', function (): void {
         ];
 
         foreach ($expectedColumns as $column) {
-            $this->list->assertTableColumnExists($column);
+            $state->list->assertTableColumnExists($column);
         }
     });
 
-    it('can get borrower name, borrowed book with date and the return date with status', function (): void {
-        $transactions = $this->transaction;
-        $transaction = $transactions->first();
+    it('can get borrower name, borrowed book with date and the return date with status', function () use ($state): void {
+        $transaction = $state->transaction->first();
 
-        $this->list
+        $state->list
             ->assertTableColumnStateSet('user.name', $transaction->user->name, record: $transaction)
             ->assertTableColumnStateSet('book.title', $transaction->book->title, record: $transaction)
             ->assertTableColumnStateSet('borrowed_date', $transaction->borrowed_date, record: $transaction)
@@ -90,29 +90,29 @@ describe('Transaction List Page', function (): void {
             ->assertTableColumnFormattedStateSet('status', $transaction->status->getLabel(), record: $transaction);
     });
 
-    it('can create a new transaction but can not delete it', function (): void {
-        $this->list
+    it('can create a new transaction but can not delete it', function () use ($state): void {
+        $state->list
             ->assertActionEnabled('create')
-            ->assertTableActionDisabled('delete', $this->transaction);
+            ->assertTableActionDisabled('delete', $state->transaction);
     });
 });
 
-describe('Transaction Create Page', function (): void {
-    beforeEach(function (): void {
-        $this->create = livewire(CreateTransaction::class, [
+describe('Transaction Create Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->create = livewire(CreateTransaction::class, [
             'panel' => 'staff',
         ]);
     });
 
-    it('can render the create page', function (): void {
-        $this->create
+    it('can render the create page', function () use ($state): void {
+        $state->create
             ->assertSuccessful();
     });
 
-    it('can create a new transaction', function (): void {
-        $newTransaction = $this->makeTransaction;
+    it('can create a new transaction', function () use ($state): void {
+        $newTransaction = $state->makeTransaction;
 
-        $this->create
+        $state->create
             ->fillForm([
                 'book_id' => $newTransaction->book->getKey(),
                 'user_id' => $newTransaction->user->getKey(),
@@ -134,8 +134,8 @@ describe('Transaction Create Page', function (): void {
         ]);
     });
 
-    it('can validate form data on create', function (): void {
-        $this->create
+    it('can validate form data on create', function () use ($state): void {
+        $state->create
             ->fillForm([
                 'book_id' => null,
                 'user_id' => null,
@@ -153,23 +153,23 @@ describe('Transaction Create Page', function (): void {
     });
 });
 
-describe('Transaction Edit Page', function (): void {
-    beforeEach(function (): void {
-        $this->edit = livewire(EditTransaction::class, [
-            'record' => $this->transaction->getRouteKey(),
+describe('Transaction Edit Page', function () use ($state): void {
+    beforeEach(function () use ($state): void {
+        $state->edit = livewire(EditTransaction::class, [
+            'record' => $state->transaction->getRouteKey(),
             'panel' => 'staff',
         ]);
     });
 
-    it('can render the edit page', function (): void {
-        $this->edit
+    it('can render the edit page', function () use ($state): void {
+        $state->edit
             ->assertSuccessful();
     });
 
-    it('can retrieve data', function (): void {
-        $transaction = $this->transaction;
+    it('can retrieve data', function () use ($state): void {
+        $transaction = $state->transaction;
 
-        $this->edit
+        $state->edit
             ->assertFormSet([
                 'book_id' => $transaction->book->getKey(),
                 'user_id' => $transaction->user->getKey(),
@@ -179,9 +179,8 @@ describe('Transaction Edit Page', function (): void {
             ]);
     });
 
-    it('can update the transaction when it is returned', function (): void {
-        $transaction = $this->transaction;
-        $updatedTransaction = $this->makeTransaction;
+    it('can update the transaction when it is returned', function () use ($state): void {
+        $transaction = $state->transaction;
 
         $updatedTransactionData = [
             'book_id' => $transaction->book->getKey(),
@@ -194,7 +193,7 @@ describe('Transaction Edit Page', function (): void {
 
         $transaction->update($updatedTransactionData);
 
-        $this->edit
+        $state->edit
             ->fillForm($updatedTransactionData)
             ->call('save')
             ->assertHasNoFormErrors();
@@ -210,9 +209,8 @@ describe('Transaction Edit Page', function (): void {
             ->returned_date->format('Y-m-d')->toBe($updatedTransactionData['returned_date']->format('Y-m-d'));
     });
 
-    it('can update the transaction when it is delayed and fine is applied', function (): void {
-        $transaction = $this->transaction;
-        $updatedTransaction = $this->makeTransaction;
+    it('can update the transaction when it is delayed and fine is applied', function () use ($state): void {
+        $transaction = $state->transaction;
 
         $borrowedDate = now();
         $returnedDate = now()->addDays(15);
@@ -228,16 +226,14 @@ describe('Transaction Edit Page', function (): void {
         ];
 
         $delayDate = abs($returnedDate->diffInDays($borrowedDate));
-
         $delayedFor = $delayDate - $borrowedFor;
-
         $fine = intval($delayedFor) * 10;
 
         $updatedTransactionData['fine'] = $fine;
 
         $transaction->update($updatedTransactionData);
 
-        $this->edit
+        $state->edit
             ->fillForm($updatedTransactionData)
             ->call('save')
             ->assertHasNoFormErrors();
@@ -254,17 +250,17 @@ describe('Transaction Edit Page', function (): void {
             ->fine->toBe($updatedTransactionData['fine']);
     });
 
-    it('can validate form data on edit', function (): void {
-        $this->transaction;
-        $this->edit
-            ->assertFormFieldIsVisible('returned_date')
+    it('can validate form data on edit', function () use ($state): void {
+        $state->edit
             ->fillForm([
                 'book_id' => null,
                 'user_id' => null,
                 'borrowed_date' => null,
                 'borrowed_for' => null,
+                'status' => BorrowedStatus::Returned->value,
                 'returned_date' => null,
             ])
+            ->assertFormFieldIsVisible('returned_date')
             ->call('save')
             ->assertHasFormErrors([
                 'book_id' => 'required',
@@ -275,10 +271,8 @@ describe('Transaction Edit Page', function (): void {
             ]);
     });
 
-    it('can not delate a transaction from the edit page', function (): void {
-        $this->transaction;
-
-        $this->edit
+    it('can not delate a transaction from the edit page', function () use ($state): void {
+        $state->edit
             ->assertActionHidden(DeleteAction::class);
     });
 });
