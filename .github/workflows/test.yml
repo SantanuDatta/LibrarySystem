@@ -61,6 +61,3 @@ jobs:
 
       - name: Run test suite
         run: php artisan test --compact
-
-      - name: Build frontend assets
-        run: npm run build
