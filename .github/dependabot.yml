@@ -9,7 +9,6 @@ updates:
       interval: "monthly"
     labels:
       - "dependencies"
-      - "php"
     groups:
       major-updates:
         update-types:
@@ -25,7 +24,6 @@ updates:
       interval: "monthly"
     labels:
       - "dependencies"
-      - "npm"
     groups:
       major-updates:
         update-types:
