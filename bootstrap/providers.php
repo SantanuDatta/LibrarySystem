@@ -1,7 +1,11 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\Filament\AdminPanelProvider;
+use App\Providers\Filament\StaffPanelProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\Filament\AdminPanelProvider::class,
-    App\Providers\Filament\StaffPanelProvider::class,
+    AppServiceProvider::class,
+    AdminPanelProvider::class,
+    StaffPanelProvider::class,
 ];

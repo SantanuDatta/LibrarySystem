@@ -13,13 +13,15 @@
 
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Tests\TestCase;
 
 use function Pest\Laravel\seed;
 
 uses(
-    Tests\TestCase::class,
+    TestCase::class,
     // Illuminate\Foundation\Testing\RefreshDatabase::class,
-    Illuminate\Foundation\Testing\LazilyRefreshDatabase::class,
+    LazilyRefreshDatabase::class,
 )->beforeEach(function (): void {
     seed();
 })->in('Feature', 'Unit');

@@ -4,12 +4,13 @@ namespace Database\Factories;
 
 use App\Enums\BorrowedStatus;
 use App\Models\Book;
+use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Transaction>
+ * @extends Factory<Transaction>
  */
 class TransactionFactory extends Factory
 {
