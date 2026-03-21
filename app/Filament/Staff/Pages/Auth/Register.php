@@ -11,7 +11,7 @@ class Register extends \Filament\Auth\Pages\Register
 {
     public function form(Schema $schema): Schema
     {
-        return $this->makeForm()
+        return $schema
             ->components([
                 $this->getNameFormComponent(),
                 $this->getEmailFormComponent(),

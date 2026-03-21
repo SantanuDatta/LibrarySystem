@@ -93,6 +93,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Serializable Classes
+    |--------------------------------------------------------------------------
+    |
+    | By default, Laravel 13 blocks arbitrary PHP object unserialization from
+    | cache payloads. If you intentionally cache objects, list the allowed
+    | classes here.
+    |
+    */
+
+    'serializable_classes' => false,
+
+    /*
+    |--------------------------------------------------------------------------
     | Cache Key Prefix
     |--------------------------------------------------------------------------
     |

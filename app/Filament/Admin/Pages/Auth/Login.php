@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Pages\Auth;
 
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
 class Login extends \Filament\Auth\Pages\Login
@@ -20,7 +21,10 @@ class Login extends \Filament\Auth\Pages\Login
     {
         return $schema
             ->components([
-                $this->getEmailFormComponent()->label('Email'),
+                TextInput::make('email')
+                    ->label('Email')
+                    ->email()
+                    ->required(),
                 $this->getPasswordFormComponent(),
                 $this->getRememberFormComponent(),
             ]);

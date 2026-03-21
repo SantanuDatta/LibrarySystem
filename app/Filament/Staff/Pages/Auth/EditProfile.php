@@ -13,7 +13,7 @@ class EditProfile extends \Filament\Auth\Pages\EditProfile
 {
     public function form(Schema $schema): Schema
     {
-        return $this->makeForm()
+        return $schema
             ->components([
                 $this->getAvatarFormComponent(),
                 $this->getNameFormComponent(),

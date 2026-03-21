@@ -2,7 +2,7 @@
 
 namespace App\Filament\Staff\Widgets;
 
-use App\Filament\Staff\Resources\TransactionResource;
+use App\Filament\Staff\Resources\Transactions\TransactionResource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;

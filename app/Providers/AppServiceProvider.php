@@ -9,8 +9,11 @@ use App\Models\Publisher;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Policies\UserPolicy;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -37,5 +40,17 @@ class AppServiceProvider extends ServiceProvider
 
         Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
         // Model::preventAccessingMissingAttributes(! $this->app->isProduction());
+        $this->configureDates();
+        $this->configureVite();
+    }
+
+    private function configureDates(): void
+    {
+        Date::use(CarbonImmutable::class);
+    }
+
+    private function configureVite(): void
+    {
+        Vite::useAggressivePrefetching();
     }
 }

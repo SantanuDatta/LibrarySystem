@@ -11,6 +11,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * @property-read \App\Models\User|null $user
+ * @property-read \App\Models\Book|null $book
+ * @property string|null $status
+ */
 #[ObservedBy(TransactionObserver::class)]
 class Transaction extends Model
 {
