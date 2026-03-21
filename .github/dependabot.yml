@@ -7,15 +7,14 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    labels:
+      - "dependencies"
+      - "php"
     groups:
       major-updates:
         update-types:
           - "major"
-      minor-updates:
-        update-types:
-          - "minor"
-          - "patch"
-      security-updates:
+      safe-updates:
         update-types:
           - "minor"
           - "patch"
@@ -24,15 +23,14 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    labels:
+      - "dependencies"
+      - "npm"
     groups:
       major-updates:
         update-types:
           - "major"
-      minor-updates:
-        update-types:
-          - "minor"
-          - "patch"
-      security-updates:
+      safe-updates:
         update-types:
           - "minor"
           - "patch"
