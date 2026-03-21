@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Admin\Resources\GenreResource\Pages;
+namespace App\Filament\Admin\Resources\Genres\Pages;
 
-use App\Filament\Admin\Resources\GenreResource;
+use App\Filament\Admin\Resources\Genres\GenreResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 

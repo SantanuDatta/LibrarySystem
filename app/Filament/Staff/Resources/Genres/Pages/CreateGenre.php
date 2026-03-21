@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Staff\Resources\GenreResource\Pages;
+namespace App\Filament\Staff\Resources\Genres\Pages;
 
-use App\Filament\Staff\Resources\GenreResource;
+use App\Filament\Staff\Resources\Genres\GenreResource;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\CreateRecord;
 

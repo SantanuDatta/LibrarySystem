@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Admin\Resources\BookResource\Pages;
+namespace App\Filament\Admin\Resources\Books\Pages;
 
-use App\Filament\Admin\Resources\BookResource;
+use App\Filament\Admin\Resources\Books\BookResource;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;

@@ -1,24 +1,16 @@
 <?php
 
-namespace App\Filament\Admin\Resources;
+namespace App\Filament\Admin\Resources\Genres;
 
-use App\Filament\Admin\Resources\GenreResource\Pages\CreateGenre;
-use App\Filament\Admin\Resources\GenreResource\Pages\EditGenre;
-use App\Filament\Admin\Resources\GenreResource\Pages\ListGenres;
-use App\Filament\Admin\Resources\GenreResource\RelationManagers\BooksRelationManager;
+use App\Filament\Admin\Resources\Genres\Pages\CreateGenre;
+use App\Filament\Admin\Resources\Genres\Pages\EditGenre;
+use App\Filament\Admin\Resources\Genres\Pages\ListGenres;
+use App\Filament\Admin\Resources\Genres\RelationManagers\BooksRelationManager;
+use App\Filament\Admin\Resources\Genres\Schemas\GenreForm;
+use App\Filament\Admin\Resources\Genres\Tables\GenresTable;
 use App\Models\Genre;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\ColorColumn;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class GenreResource extends Resource
@@ -31,42 +23,12 @@ class GenreResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                Section::make()
-                    ->schema([
-                        TextInput::make('name')
-                            ->required(),
-                        ColorPicker::make('bg_color'),
-                        ColorPicker::make('text_color'),
-                    ])->columns(3),
-            ]);
+        return GenreForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('name')
-                    ->sortable()
-                    ->searchable(),
-                ColorColumn::make('bg_color'),
-                ColorColumn::make('text_color'),
-            ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
-                ActionGroup::make([
-                    EditAction::make(),
-                    DeleteAction::make(),
-                ]),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+        return GenresTable::configure($table);
     }
 
     public static function getRelations(): array

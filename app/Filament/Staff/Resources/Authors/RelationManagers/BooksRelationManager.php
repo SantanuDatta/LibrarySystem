@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Staff\Resources\AuthorResource\RelationManagers;
+namespace App\Filament\Staff\Resources\Authors\RelationManagers;
 
 use App\Models\Author;
 use Filament\Actions\ActionGroup;
@@ -39,79 +39,67 @@ class BooksRelationManager extends RelationManager
             ->components([
                 Grid::make(3)
                     ->schema([
-                        Group::make()
-                            ->schema([
-                                Section::make()
-                                    ->schema([
-                                        Group::make()
-                                            ->schema([
-                                                TextInput::make('title'),
-                                                Select::make('publisher_id')
-                                                    ->relationship('publisher', 'name')
-                                                    ->searchable()
-                                                    ->native(false)
-                                                    ->preload()
-                                                    ->live()
-                                                    ->afterStateUpdated(fn (Set $set) => $set('author_id', null)),
-                                                Select::make('author_id')
-                                                    ->options(fn (Get $get) => Author::where('publisher_id', $get('publisher_id'))
-                                                        ->pluck('name', 'id'))
-                                                    ->searchable()
-                                                    ->native(false)
-                                                    ->preload()
-                                                    ->live(),
-                                                Select::make('genre_id')
-                                                    ->relationship('genre', 'name')
-                                                    ->searchable()
-                                                    ->native(false)
-                                                    ->preload(),
-                                            ])->columns(2),
-                                        Group::make()
-                                            ->schema([
-                                                TextInput::make('isbn')
-                                                    ->prefixIcon('heroicon-o-qr-code')
-                                                    ->prefixIconColor('white')
-                                                    ->numeric(),
-                                                TextInput::make('price')
-                                                    ->prefix('$')
-                                                    ->mask(RawJs::make('$money($input)'))
-                                                    ->stripCharacters(',')
-                                                    ->numeric(),
-                                                TextInput::make('stock')
-                                                    ->prefixIcon('heroicon-o-archive-box')
-                                                    ->prefixIconColor('white')
-                                                    ->numeric(),
-                                            ])->columns(3),
-                                        RichEditor::make('description')
-                                            ->disableToolbarButtons(['attachFiles'])
-                                            ->columnSpanFull(),
-                                    ]),
-                            ])->columnSpan(['sm' => 2, 'md' => 2, 'xxl' => 5]),
-                        Group::make()
-                            ->schema([
-                                Section::make()
-                                    ->schema([
-                                        SpatieMediaLibraryFileUpload::make('cover_image')
-                                            ->image()
-                                            ->imageEditor()
-                                            ->imageEditorAspectRatios([
-                                                '1:1.6',
-                                            ])
-                                            ->optimize('webp')
-                                            ->collection('coverBooks')
-                                            ->responsiveImages()
-                                            ->storeFileNamesIn('cover_image_file_names')
-                                            ->deleteUploadedFileUsing(function ($record): void {
-                                                Storage::disk('public')->delete($record);
-                                            }),
-                                    ]),
-                                Section::make()
-                                    ->schema([
-                                        DatePicker::make('published'),
-                                        Toggle::make('available'),
-                                    ]),
-                            ])->columnSpan(['sm' => 2, 'md' => 1, 'xxl' => 1]),
-                    ]),
+                        Section::make([
+                            Group::make([
+                                TextInput::make('title'),
+                                Select::make('publisher_id')
+                                    ->relationship('publisher', 'name')
+                                    ->searchable()
+                                    ->native(false)
+                                    ->preload()
+                                    ->live()
+                                    ->afterStateUpdated(fn (Set $set) => $set('author_id', null)),
+                                Select::make('author_id')
+                                    ->options(fn (Get $get) => Author::where('publisher_id', $get('publisher_id'))
+                                        ->pluck('name', 'id'))
+                                    ->searchable()
+                                    ->native(false)
+                                    ->preload()
+                                    ->live(),
+                                Select::make('genre_id')
+                                    ->relationship('genre', 'name')
+                                    ->searchable()
+                                    ->native(false)
+                                    ->preload(),
+                            ])->columns(2),
+                            Group::make([
+                                TextInput::make('isbn')
+                                    ->prefixIcon('heroicon-o-qr-code')
+                                    ->prefixIconColor('white')
+                                    ->numeric(),
+                                TextInput::make('price')
+                                    ->prefix('$')
+                                    ->mask(RawJs::make('$money($input)'))
+                                    ->stripCharacters(',')
+                                    ->numeric(),
+                                TextInput::make('stock')
+                                    ->prefixIcon('heroicon-o-archive-box')
+                                    ->prefixIconColor('white')
+                                    ->numeric(),
+                            ])->columns(3),
+                            RichEditor::make('description')
+                                ->disableToolbarButtons(['attachFiles'])
+                                ->columnSpanFull(),
+                        ])->columnSpan(['sm' => 2, 'md' => 2, 'xxl' => 5]),
+                        Section::make([
+                            Group::make([
+                                SpatieMediaLibraryFileUpload::make('cover_image')
+                                    ->image()
+                                    ->imageEditor()
+                                    ->imageEditorAspectRatioOptions([
+                                        '1:1.6',
+                                    ])
+                                    ->collection('coverBooks')
+                                    ->responsiveImages()
+                                    ->storeFileNamesIn('cover_image_file_names')
+                                    ->deleteUploadedFileUsing(function ($record): void {
+                                        Storage::disk('public')->delete($record);
+                                    }),
+                                DatePicker::make('published'),
+                                Toggle::make('available'),
+                            ]),
+                        ])->columnSpan(['sm' => 2, 'md' => 1, 'xxl' => 1]),
+                    ])->columnSpanFull(),
             ]);
     }
 

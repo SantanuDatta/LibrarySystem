@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Admin\Resources\TransactionResource\Pages;
+namespace App\Filament\Admin\Resources\Transactions\Pages;
 
 use App\Enums\BorrowedStatus;
-use App\Filament\Admin\Resources\TransactionResource;
+use App\Filament\Admin\Resources\Transactions\TransactionResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Staff\Resources\UserResource\Pages;
+namespace App\Filament\Staff\Resources\Users\Pages;
 
-use App\Filament\Staff\Resources\UserResource;
+use App\Filament\Staff\Resources\Users\UserResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 

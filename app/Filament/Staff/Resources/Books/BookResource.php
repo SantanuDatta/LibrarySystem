@@ -1,39 +1,18 @@
 <?php
 
-namespace App\Filament\Staff\Resources;
+namespace App\Filament\Staff\Resources\Books;
 
-use App\Filament\Staff\Resources\BookResource\Pages\CreateBook;
-use App\Filament\Staff\Resources\BookResource\Pages\EditBook;
-use App\Filament\Staff\Resources\BookResource\Pages\ListBooks;
+use App\Filament\Staff\Resources\Books\Pages\CreateBook;
+use App\Filament\Staff\Resources\Books\Pages\EditBook;
+use App\Filament\Staff\Resources\Books\Pages\ListBooks;
+use App\Filament\Staff\Resources\Books\Schemas\BookForm;
+use App\Filament\Staff\Resources\Books\Tables\BooksTable;
 use App\Http\Traits\NavigationCount;
-use App\Models\Author;
 use App\Models\Book;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Group;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Filament\Support\RawJs;
-use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Storage;
 
 class BookResource extends Resource
 {
@@ -49,151 +28,24 @@ class BookResource extends Resource
 
     protected static ?int $globalSearchResultLimit = 20;
 
-    /**
-     * @param  Book  $record
-     */
+    /** @return array<string, string|null> */
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
-            'Author' => $record->author->name,
-            'Publisher' => $record->publisher->name,
-            'Genre' => $record->genre->name,
+            'Author' => $record->author->name ?? null,
+            'Publisher' => $record->publisher->name ?? null,
+            'Genre' => $record->genre->name ?? null,
         ];
     }
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                Grid::make(3)
-                    ->schema([
-                        Group::make()
-                            ->schema([
-                                Section::make()
-                                    ->schema([
-                                        Group::make()
-                                            ->schema([
-                                                TextInput::make('title')
-                                                    ->required(),
-                                                Select::make('publisher_id')
-                                                    ->relationship('publisher', 'name')
-                                                    ->searchable()
-                                                    ->native(false)
-                                                    ->preload()
-                                                    ->live()
-                                                    ->afterStateUpdated(fn (Set $set) => $set('author_id', null))
-                                                    ->required(),
-                                                Select::make('author_id')
-                                                    ->label('Author')
-                                                    ->options(
-                                                        fn (Get $get): Collection => Author::query()
-                                                            ->with('publisher')
-                                                            ->where('publisher_id', $get('publisher_id'))
-                                                            ->pluck('name', 'id')
-                                                    )
-                                                    ->searchable()
-                                                    ->native(false)
-                                                    ->preload()
-                                                    ->live()
-                                                    ->required(),
-                                                Select::make('genre_id')
-                                                    ->relationship('genre', 'name')
-                                                    ->searchable()
-                                                    ->native(false)
-                                                    ->preload()
-                                                    ->required(),
-                                            ])->columns(2),
-                                        Group::make()
-                                            ->schema([
-                                                TextInput::make('isbn')
-                                                    ->prefixIcon('heroicon-o-qr-code')
-                                                    ->prefixIconColor('white')
-                                                    ->numeric()
-                                                    ->required()
-                                                    ->unique(ignoreRecord: true),
-                                                TextInput::make('price')
-                                                    ->prefix('$')
-                                                    ->mask(RawJs::make('$money($input)'))
-                                                    ->stripCharacters(',')
-                                                    ->numeric()
-                                                    ->required(),
-                                                TextInput::make('stock')
-                                                    ->prefixIcon('heroicon-o-archive-box')
-                                                    ->prefixIconColor('white')
-                                                    ->numeric()
-                                                    ->required(),
-                                            ])->columns(3),
-                                        RichEditor::make('description')
-                                            ->disableToolbarButtons(['attachFiles'])
-                                            ->columnSpanFull(),
-                                    ]),
-                            ])->columnSpan(['sm' => 2, 'md' => 2, 'xxl' => 5]),
-                        Group::make()
-                            ->schema([
-                                Section::make()
-                                    ->schema([
-                                        SpatieMediaLibraryFileUpload::make('cover_image')
-                                            ->image()
-                                            ->imageEditor()
-                                            ->imageEditorAspectRatios([
-                                                '1:1.6',
-                                            ])
-                                            ->optimize('webp')
-                                            ->collection('coverBooks')
-                                            ->responsiveImages(true)
-                                            ->deleteUploadedFileUsing(function ($file): void {
-                                                Storage::disk('public')->delete($file);
-                                            }),
-                                    ]),
-                                Section::make()
-                                    ->schema([
-                                        DatePicker::make('published')
-                                            ->required(),
-                                        Toggle::make('available'),
-                                    ]),
-                            ])->columnSpan(['sm' => 2, 'md' => 1, 'xxl' => 1]),
-                    ]),
-            ]);
+        return BookForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                SpatieMediaLibraryImageColumn::make('cover_image')
-                    ->collection('coverBooks')
-                    ->conversion('thumb'),
-                TextColumn::make('title')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('author.name')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('stock'),
-                ToggleColumn::make('available'),
-            ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
-                ActionGroup::make([
-                    EditAction::make(),
-                    DeleteAction::make()
-                        ->before(function ($record): void {
-                            Storage::disk('public')->delete($record);
-                        }),
-                ]),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make()
-                        ->before(function ($records): void {
-                            $records->each(function ($record): void {
-                                Storage::disk('public')->delete($record);
-                            });
-                        }),
-                ]),
-            ]);
+        return BooksTable::configure($table);
     }
 
     public static function getRelations(): array

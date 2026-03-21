@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Staff\Resources\BookResource\Pages;
+namespace App\Filament\Staff\Resources\Books\Pages;
 
-use App\Filament\Staff\Resources\BookResource;
+use App\Filament\Staff\Resources\Books\BookResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
