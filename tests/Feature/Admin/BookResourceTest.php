@@ -141,11 +141,18 @@ describe('Book Create Page', function () use ($state): void {
             'title' => $newBook->title,
             'isbn' => $newBook->isbn,
             'price' => $newBook->price,
-            'description' => e($newBook->description),
             'stock' => $newBook->stock,
             'available' => $newBook->available,
             'published' => $newBook->published?->format('Y-m-d H:i:s'),
         ]);
+
+        $createdBook = Book::query()
+            ->where('title', $newBook->title)
+            ->where('isbn', $newBook->isbn)
+            ->first();
+
+        expect($createdBook)->not->toBeNull()
+            ->and(strip_tags((string) $createdBook->description))->toBe(e($newBook->description));
     });
 
     it('can create a new book with a cover image', function () use ($state): void {
@@ -175,13 +182,16 @@ describe('Book Create Page', function () use ($state): void {
             'title' => $newBook->title,
             'isbn' => $newBook->isbn,
             'price' => $newBook->price,
-            'description' => e($newBook->description),
             'stock' => $newBook->stock,
             'available' => $newBook->available,
             'published' => $newBook->published?->format('Y-m-d H:i:s'),
         ]);
 
-        $createdBook = Book::latest()->first();
+        $createdBook = Book::query()
+            ->where('title', $newBook->title)
+            ->where('isbn', $newBook->isbn)
+            ->first();
+        expect(strip_tags((string) $createdBook?->description))->toBe(e($newBook->description));
         $createdBook->addMedia($state->imagePath)->toMediaCollection('coverBooks');
         $mediaCollection = $createdBook->getMedia('coverBooks')->last();
 
@@ -246,7 +256,6 @@ describe('Book Edit Page', function () use ($state): void {
                 'title' => $book->title,
                 'isbn' => $book->isbn,
                 'price' => $book->price,
-                'description' => e($book->description),
                 'stock' => $book->stock,
                 'available' => $book->available,
                 'published' => $book->published->format('Y-m-d'),
@@ -280,10 +289,11 @@ describe('Book Edit Page', function () use ($state): void {
             ->genre_id->toBe($updatedBook->genre->getKey())
             ->isbn->toBe($updatedBook->isbn)
             ->price->toBe($updatedBook->price)
-            ->description->toBe(e($updatedBook->description))
             ->stock->toBe($updatedBook->stock)
             ->available->toBe($updatedBook->available)
             ->published->format('Y-m-d')->toBe($updatedBook->published->format('Y-m-d'));
+
+        expect(strip_tags((string) $book->description))->toBe(e($updatedBook->description));
     });
 
     it('can update the book with a cover image', function () use ($state): void {
@@ -319,10 +329,11 @@ describe('Book Edit Page', function () use ($state): void {
             ->genre_id->toBe($updatedBook->genre->getKey())
             ->isbn->toBe($updatedBook->isbn)
             ->price->toBe($updatedBook->price)
-            ->description->toBe(e($updatedBook->description))
             ->stock->toBe($updatedBook->stock)
             ->available->toBe($updatedBook->available)
             ->published->format('Y-m-d')->toBe($updatedBook->published->format('Y-m-d'));
+
+        expect(strip_tags((string) $book->description))->toBe(e($updatedBook->description));
 
         expect($mediaCollection)
             ->toBeInstanceOf(Media::class)

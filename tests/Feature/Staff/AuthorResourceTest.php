@@ -106,8 +106,15 @@ describe('Author Create Page', function () use ($state): void {
             'name' => $newAuthor->name,
             'publisher_id' => $newAuthor->publisher->getKey(),
             'date_of_birth' => $newAuthor->date_of_birth?->format('Y-m-d H:i:s'),
-            'bio' => e($newAuthor->bio),
         ]);
+
+        $createdAuthor = Author::query()
+            ->where('name', $newAuthor->name)
+            ->where('publisher_id', $newAuthor->publisher->getKey())
+            ->first();
+
+        expect($createdAuthor)->not->toBeNull()
+            ->and(strip_tags((string) $createdAuthor->bio))->toBe(e($newAuthor->bio));
     });
 
     it('can create a new author with an avatar', function () use ($state): void {
@@ -128,10 +135,13 @@ describe('Author Create Page', function () use ($state): void {
             'name' => $newAuthor->name,
             'publisher_id' => $newAuthor->publisher->getKey(),
             'date_of_birth' => $newAuthor->date_of_birth?->format('Y-m-d H:i:s'),
-            'bio' => e($newAuthor->bio),
         ]);
 
-        $createdAuthor = Author::latest()->first();
+        $createdAuthor = Author::query()
+            ->where('name', $newAuthor->name)
+            ->where('publisher_id', $newAuthor->publisher->getKey())
+            ->first();
+        expect(strip_tags((string) $createdAuthor?->bio))->toBe(e($newAuthor->bio));
         $createdAuthor->addMedia($state->imagePath, 'public')->toMediaCollection('avatars');
         $mediaCollection = $createdAuthor->getMedia('avatars')->last();
 
@@ -193,7 +203,7 @@ describe('Author Edit Page', function () use ($state): void {
             ->name->toBe($updatedAuthor->name)
             ->publisher_id->toBe($updatedAuthor->publisher->getKey())
             ->date_of_birth->format('Y-m-d')->toBe($author->date_of_birth->format('Y-m-d'))
-            ->bio->toBe($author->bio);
+            ->and(strip_tags((string) $author->bio))->toBe(e($updatedAuthor->bio));
     });
 
     it('can update an author with an avatar', function () use ($state): void {
@@ -220,7 +230,7 @@ describe('Author Edit Page', function () use ($state): void {
             ->name->toBe($updatedAuthor->name)
             ->publisher_id->toBe($updatedAuthor->publisher->getKey())
             ->date_of_birth->format('Y-m-d')->toBe($author->date_of_birth->format('Y-m-d'))
-            ->bio->toBe($author->bio);
+            ->and(strip_tags((string) $author->bio))->toBe(e($updatedAuthor->bio));
 
         expect($mediaCollection)
             ->toBeInstanceOf(Media::class)
