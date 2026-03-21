@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 #[ObservedBy(UserObserver::class)]
@@ -91,26 +90,5 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         parent::boot();
 
-        static::created(function ($model): void {
-            $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
-            if (Cache::has($cacheKey)) {
-                Cache::forget($cacheKey);
-            }
-            $borrowerKey = 'BorrowerCount_'.class_basename($model).$model->getTable();
-            if (Cache::has($borrowerKey)) {
-                Cache::forget($borrowerKey);
-            }
-        });
-
-        static::deleted(function ($model): void {
-            $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
-            if (Cache::has($cacheKey)) {
-                Cache::forget($cacheKey);
-            }
-            $borrowerKey = 'BorrowerCount_'.class_basename($model).$model->getTable();
-            if (Cache::has($borrowerKey)) {
-                Cache::forget($borrowerKey);
-            }
-        });
     }
 }

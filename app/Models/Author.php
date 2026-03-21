@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Cache;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -35,24 +34,5 @@ class Author extends Model implements HasMedia
     public function publisher(): BelongsTo
     {
         return $this->belongsTo(Publisher::class);
-    }
-
-    public static function booted(): void
-    {
-        parent::boot();
-
-        static::created(function ($model): void {
-            $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
-            if (Cache::has($cacheKey)) {
-                Cache::forget($cacheKey);
-            }
-        });
-
-        static::deleted(function ($model): void {
-            $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
-            if (Cache::has($cacheKey)) {
-                Cache::forget($cacheKey);
-            }
-        });
     }
 }

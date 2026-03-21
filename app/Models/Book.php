@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Cache;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -46,24 +45,5 @@ class Book extends Model implements HasMedia
     public function genre(): BelongsTo
     {
         return $this->belongsTo(Genre::class);
-    }
-
-    public static function booted(): void
-    {
-        parent::boot();
-
-        static::created(function ($model): void {
-            $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
-            if (Cache::has($cacheKey)) {
-                Cache::forget($cacheKey);
-            }
-        });
-
-        static::deleted(function ($model): void {
-            $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
-            if (Cache::has($cacheKey)) {
-                Cache::forget($cacheKey);
-            }
-        });
     }
 }

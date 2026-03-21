@@ -2,21 +2,20 @@
 
 namespace App\Http\Traits;
 
-use Illuminate\Support\Facades\Cache;
-
 trait NavigationCount
 {
-    public static function getNavigationItems(): array
+    public static function getNavigationBadge(): ?string
     {
-        $cacheKey = 'NavigationCount_'.class_basename(static::class);
-        $cachedCount = Cache::remember($cacheKey, now()->addMinutes(5), function () {
-            return static::getModel()::count();
-        });
-        [$navigationItem] = parent::getNavigationItems();
+        return (string) static::getNavigationBadgeCount();
+    }
 
-        return [
-            $navigationItem
-                ->badge($cachedCount, color: $cachedCount > 10 ? 'info' : 'primary'),
-        ];
+    public static function getNavigationBadgeColor(): string
+    {
+        return static::getNavigationBadgeCount() > 10 ? 'info' : 'primary';
+    }
+
+    protected static function getNavigationBadgeCount(): int
+    {
+        return static::getModel()::count();
     }
 }

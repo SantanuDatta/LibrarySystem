@@ -9,11 +9,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 
 /**
- * @property-read \App\Models\User|null $user
- * @property-read \App\Models\Book|null $book
+ * @property-read User|null $user
+ * @property-read Book|null $book
  * @property string|null $status
  */
 #[ObservedBy(TransactionObserver::class)]
@@ -64,20 +63,6 @@ class Transaction extends Model
                 $fine = $delay * 10;
             }
             $transaction->fine = $fine;
-        });
-
-        static::created(function ($model): void {
-            $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
-            if (Cache::has($cacheKey)) {
-                Cache::forget($cacheKey);
-            }
-        });
-
-        static::deleted(function ($model): void {
-            $cacheKey = 'NavigationCount_'.class_basename($model).$model->getTable();
-            if (Cache::has($cacheKey)) {
-                Cache::forget($cacheKey);
-            }
         });
     }
 }
