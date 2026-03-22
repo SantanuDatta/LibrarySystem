@@ -50,12 +50,14 @@ class ManageGeneral extends SettingsPage
                                 ->schema([
                                     FileUpload::make('site_favicon')
                                         ->image()
+                                        ->disk('public')
                                         ->directory('sites')
                                         ->acceptedFileTypes(['image/x-icon', 'image/vnd.microsoft.icon'])
                                         ->deleteUploadedFileUsing(fn ($file) => Storage::disk('public')->delete($file))
                                         ->nullable(),
                                     FileUpload::make('site_logo')
                                         ->image()
+                                        ->disk('public')
                                         ->directory('sites')
                                         ->label('Site Logo (General)')
                                         ->deleteUploadedFileUsing(fn ($file) => Storage::disk('public')->delete($file))
@@ -65,6 +67,7 @@ class ManageGeneral extends SettingsPage
                                 ->schema([
                                     FileUpload::make('site_logo_dark')
                                         ->image()
+                                        ->disk('public')
                                         ->directory('sites')
                                         ->label('Site Logo (Dark Mode)')
                                         ->deleteUploadedFileUsing(fn ($file) => Storage::disk('public')->delete($file))
