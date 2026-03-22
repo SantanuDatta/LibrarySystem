@@ -9,12 +9,17 @@ use App\Models\Publisher;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Policies\UserPolicy;
+use App\Settings\GeneralSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Spatie\LaravelSettings\Models\SettingsProperty;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -42,6 +47,7 @@ class AppServiceProvider extends ServiceProvider
         // Model::preventAccessingMissingAttributes(! $this->app->isProduction());
         $this->configureDates();
         $this->configureVite();
+        $this->shareSettings();
     }
 
     private function configureDates(): void
@@ -52,5 +58,25 @@ class AppServiceProvider extends ServiceProvider
     private function configureVite(): void
     {
         Vite::useAggressivePrefetching();
+    }
+
+    private function shareSettings(): void
+    {
+        View::share('settings', $this->resolveSettings());
+    }
+
+    private function resolveSettings(): ?GeneralSettings
+    {
+        try {
+            $settingsTable = (new SettingsProperty)->getTable();
+
+            if (! Schema::hasTable($settingsTable)) {
+                return null;
+            }
+
+            return app(GeneralSettings::class);
+        } catch (Throwable) {
+            return null;
+        }
     }
 }

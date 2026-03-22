@@ -47,9 +47,17 @@
                     <nav class="rounded-lg border border-white/10 bg-slate-950/65 px-4 py-4 shadow-lg shadow-black/30 ring-1 ring-white/5 backdrop-blur-xl md:px-5">
                         <div class="flex items-center justify-between gap-4">
                             <div class="min-w-0">
-                                <p class="text-lg font-semibold uppercase tracking-[0.35em] text-teal-300">
-                                    Library System
-                                </p>
+                                @if ($settings?->site_logo)
+                                    <img
+                                        src="{{ Storage::disk('public')->url($settings->site_logo) }}"
+                                        alt="{{ $settings->site_name }}"
+                                        class="h-8 w-auto"
+                                    >
+                                @else
+                                    <p class="text-lg font-semibold uppercase tracking-[0.35em] text-teal-300">
+                                        Library System
+                                    </p>
+                                @endif
                             </div>
 
                             <button
