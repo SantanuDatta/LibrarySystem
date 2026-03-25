@@ -1,0 +1,11 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/mossbyte/library.mossbyteagency.com
+    - /bin/mkdir -p "$DEPLOYPATH"
+    - /usr/bin/rsync -av --delete --exclude='.git' --exclude='.cpanel.yml' --exclude='.env' --exclude='database/database.sqlite' --exclude='storage/app/public' --exclude='storage/framework/cache/data' --exclude='storage/framework/sessions' --exclude='storage/framework/views' --exclude='storage/logs' ./ "$DEPLOYPATH/"
+    - cd "$DEPLOYPATH" && composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+    - cd "$DEPLOYPATH" && php artisan migrate --force --no-interaction
+    - cd "$DEPLOYPATH" && php artisan storage:link
+    - cd "$DEPLOYPATH" && php artisan optimize:clear
+    - cd "$DEPLOYPATH" && php artisan optimize
