@@ -7,8 +7,8 @@ return new class extends SettingsMigration
 {
     public function up(): void
     {
-        $sourcePath = public_path('images/library-system-wordmark.png');
-        $targetPath = storage_path('app/public/sites/library-system-wordmark.png');
+        $sourcePath = public_path('images/BookHive.png');
+        $targetPath = storage_path('app/public/sites/BookHive.png');
 
         if (File::exists($sourcePath) && ! File::exists($targetPath)) {
             File::ensureDirectoryExists(dirname($targetPath));
@@ -20,7 +20,7 @@ return new class extends SettingsMigration
                 return $value;
             }
 
-            return 'sites/library-system-wordmark.png';
+            return 'sites/BookHive.png';
         });
     }
 };

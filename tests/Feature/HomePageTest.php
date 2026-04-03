@@ -2,7 +2,11 @@
 
 use App\Settings\GeneralSettings;
 
+use function Pest\Laravel\withoutVite;
+
 it('renders the home landing page', function (): void {
+    withoutVite();
+
     $this->get('/')
         ->assertSuccessful()
         ->assertViewIs('home')

@@ -15,11 +15,11 @@ beforeEach(function (): void {
 });
 
 it('uses the bundled logo as the default site logo', function (): void {
-    $bundledLogoPath = 'sites/library-system-wordmark.png';
+    $bundledLogoPath = 'sites/BookHive.png';
 
     Storage::disk('public')->put(
         $bundledLogoPath,
-        file_get_contents(public_path('images/library-system-wordmark.png')),
+        file_get_contents(public_path('images/BookHive.png')),
     );
 
     $settings = app(GeneralSettings::class)->refresh();
