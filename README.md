@@ -13,7 +13,7 @@
 
 ## Library Management System
 
-This is a project designed to manage and maintain the records of books in a library and can be lend to those who wants to borrow but will be fined if they delay to return a book on time. Its been created using Filament v3.
+This is a project designed to manage and maintain the records of books in a library and can be lend to those who wants to borrow but will be fined if they delay to return a book on time.
 
 ## Features
 
