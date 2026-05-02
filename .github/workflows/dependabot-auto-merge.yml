@@ -1,22 +1,12 @@
 name: Dependabot Auto Merge
-
 on:
-  pull_request_target:
-    types:
-      - opened
-      - synchronize
-      - reopened
-      - ready_for_review
-
-permissions:
-  contents: write
-  pull-requests: write
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
   auto-merge:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
-
     steps:
       - name: Fetch Dependabot metadata
         id: metadata
@@ -24,18 +14,11 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Auto-approve patch updates
-        if: >
-          steps.metadata.outputs.update-type == 'version-update:semver-patch'
-        run: gh pr review --approve "$PR_URL"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-
       - name: Enable auto-merge for patch updates
-        if: >
-          steps.metadata.outputs.update-type == 'version-update:semver-patch'
-        run: gh pr merge --auto --squash --delete-branch "$PR_URL"
+        if: steps.metadata.outputs.update-type == 'version-update:semver-patch'
+        run: |
+          gh pr review --approve "$PR_URL"
+          gh pr merge --auto --squash --delete-branch "$PR_URL"
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.AUTO_MERGE_TOKEN }} # Use the PAT here   
